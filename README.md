@@ -55,9 +55,9 @@
 - `+` 레지스터 복사·붙여넣기용 시스템 클립보드 제공자와 아이콘 표시용 Nerd
   Font가 필요합니다.
 
-Linux/macOS 설치기는 언어 서버와 외부 도구를 함께 설치합니다. Windows는
-[공식 링크 안내](docs/windows-setup.md)를 따라 직접 설치합니다. 이 설정에서는 C/C++ 및
-Lua 언어 서버를 활성화하지 않습니다.
+Linux/macOS 설치기는 Rust/Python 서버와 외부 도구를 함께 설치합니다. Windows는
+[설치 안내](docs/windows-setup.md)를 참고하세요. C/C++, Rust, Python, Shell, Makefile은
+언어별로 켜고 끌 수 있습니다. 추가 서버 설치와 명령은 [LSP 설정 안내](docs/lsp.md)를 참고하세요. Lua LSP는 활성화하지 않습니다.
 
 ### 설치
 
@@ -142,7 +142,8 @@ Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`�
 | `ui.lua` | Evergarden 테마, lualine 상태줄, 버퍼 탭, 파일 트리, 창별 파일명 |
 | `plugin_setup.lua` | Treesitter, Git 변경 표시, 괄호 자동 완성, hex |
 | `snippets.lua` | LuaSnip과 `date` 스니펫 |
-| `lsp.lua` | LSP 기능 협상, 진단, 버퍼별 언어 단축키 |
+| `lsp.lua` | LSP 전환 명령, 기능 협상, 진단, 버퍼별 단축키 |
+| `lsp_languages.lua` | 언어별 LSP 시작 기본값 (`enabled`) |
 | `basic.lua` | 편집기 옵션, 이동, 클립보드, 검색 단축키 |
 
 주요 플러그인은 검색용 FzfLua, 자동 완성용 blink.cmp·LuaSnip, 파일 탐색용
@@ -270,9 +271,10 @@ Python uses Pyright.
 - For Python: `pyright-langserver` on `PATH` (provided by Pyright).
 - A system clipboard provider for `+` register copy/paste; a Nerd Font for icons.
 
-Linux/macOS installers include language servers and external tools. On Windows,
-install them manually using the [official links guide](docs/windows-setup.md). C/C++ and Lua
-language servers are not enabled by this configuration.
+Linux/macOS installers include Rust/Python servers and external tools. See the
+[Windows setup guide](docs/windows-setup.md) for Windows. C/C++, Rust, Python, Shell, and
+Makefile LSPs can be switched individually; see [LSP settings](docs/lsp.md) for commands
+and additional server installation. Lua LSP is not enabled.
 
 ### Install
 
@@ -359,7 +361,8 @@ automatically. Select a Nerd Font in your terminal separately for icon display.
 | `ui.lua` | Evergarden theme, lualine statusline, bufferline, file tree, window labels |
 | `plugin_setup.lua` | Treesitter, Git signs, autopairs, hex |
 | `snippets.lua` | LuaSnip and the `date` snippet |
-| `lsp.lua` | LSP capabilities, diagnostics, per-buffer language shortcuts |
+| `lsp.lua` | LSP switching commands, capabilities, diagnostics, buffer shortcuts |
+| `lsp_languages.lua` | Per-language LSP startup defaults (`enabled`) |
 | `basic.lua` | Editor options, navigation, clipboard and search shortcuts |
 
 The main plugins are FzfLua for search, blink.cmp and LuaSnip for
@@ -488,9 +491,10 @@ Python には Pyright を使用します。
 - Python 用：`PATH` 上の `pyright-langserver`（Pyright に含まれます）。
 - `+` レジスターによるコピーと貼り付けに使うシステムクリップボードプロバイダーと、アイコン表示用の Nerd Font。
 
-Linux/macOS のインストーラーは言語サーバーと外部ツールも導入します。
-Windows は[公式リンクの案内](docs/windows-setup.md)から手動で導入します。
-この設定では C/C++ と Lua の言語サーバーを有効にしていません。
+Linux/macOS のインストーラーは Rust/Python サーバーと外部ツールも導入します。
+Windows は[セットアップ案内](docs/windows-setup.md)を参照してください。
+C/C++、Rust、Python、Shell、Makefile は言語ごとに切り替えられます。
+コマンドと追加サーバーの導入方法は [LSP 設定](docs/lsp.md)を参照してください。Lua LSP は無効です。
 
 ### インストール
 
@@ -575,7 +579,8 @@ Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリン�
 | `ui.lua` | Evergarden テーマ、lualine ステータスライン、bufferline、ファイルツリー、ウィンドウラベル |
 | `plugin_setup.lua` | Treesitter、Git の変更サイン、autopairs、hex |
 | `snippets.lua` | LuaSnip と `date` スニペット |
-| `lsp.lua` | LSP の機能設定、診断、バッファーごとの言語用ショートカット |
+| `lsp.lua` | LSP 切り替え、機能設定、診断、バッファーごとのショートカット |
+| `lsp_languages.lua` | 言語別 LSP の起動時設定 (`enabled`) |
 | `basic.lua` | エディターのオプション、移動、クリップボードと検索のショートカット |
 
 主なプラグインは、検索用の FzfLua、補完用の blink.cmp と LuaSnip、ファイル操作用の nvim-tree、

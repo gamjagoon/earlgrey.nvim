@@ -45,6 +45,14 @@ function M.pyright_command()
   return { 'pyright-langserver', '--stdio' }
 end
 
+function M.bashls_command()
+  if vim.fn.has('win32') == 1 then
+    -- npm installs a batch launcher; libuv cannot execute .cmd files directly.
+    return { vim.env.COMSPEC or 'cmd.exe', '/d', '/c', 'bash-language-server.cmd', 'start' }
+  end
+  return { 'bash-language-server', 'start' }
+end
+
 function M.hex_options()
   if vim.fn.has('win32') == 1 then
     -- Legacy-encoded text is still text. Keep extension/-b binary detection.

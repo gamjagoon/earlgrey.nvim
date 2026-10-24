@@ -22,6 +22,9 @@ local function check()
     local cmd = compat.pyright_command()
     assert(vim.deep_equal(cmd, { vim.env.COMSPEC, '/d', '/c', 'pyright-langserver.cmd', '--stdio' }),
       'Windows Pyright must launch the batch file via cmd with separate arguments')
+    assert(vim.deep_equal(compat.bashls_command(),
+      { vim.env.COMSPEC, '/d', '/c', 'bash-language-server.cmd', 'start' }),
+      'Windows bash-language-server must launch its batch file via cmd')
     vim.env.LLVM_MINGW_ROOT = nil
     vim.fn.exepath = function(name)
       if name:match('^x86_64%-w64%-mingw32%-clang') then return 'C:/LLVM MinGW/bin/' .. name end
@@ -51,6 +54,7 @@ local function check()
       return saved_has(feature)
     end
     assert(vim.deep_equal(compat.pyright_command(), { 'pyright-langserver', '--stdio' }))
+    assert(vim.deep_equal(compat.bashls_command(), { 'bash-language-server', 'start' }))
     assert(next(compat.hex_options()) == nil, 'Unix hex configuration changed')
     local previous = vim.env.CC
     assert(not compat.setup_windows_toolchain() and vim.env.CC == previous, 'Unix compiler environment changed')

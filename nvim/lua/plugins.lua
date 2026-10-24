@@ -75,6 +75,7 @@ return require("lazy").setup({
 					float_win_config = { border = "none", auto_focus = true },
 				},
 				server = {
+					auto_attach = false,
 					on_attach = function(_, bufnr)
 						vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 					end,

@@ -25,6 +25,41 @@ local function check()
   assert(vim.fn.maparg(' S', 'n') == '', 'Leap window mapping remains')
   assert(vim.lsp.config.pyright.capabilities.textDocument.completion.completionItem.snippetSupport,
     'completion capabilities were not applied')
+  local lsp = require('lsp')
+  local language_defaults = require('lsp_languages')
+  for _, language in ipairs({ 'c', 'cpp', 'rust', 'python', 'shell', 'makefile' }) do
+    assert(language_defaults[language] and language_defaults[language].enabled,
+      'missing enabled LSP default for ' .. language)
+    assert(lsp.is_enabled(language), language .. ' LSP should be enabled by default')
+  end
+  assert(language_defaults.c.server == language_defaults.cpp.server,
+    'C and C++ must share the clangd server')
+  local user_commands = vim.api.nvim_get_commands({})
+  for _, command in ipairs({ 'LspEnable', 'LspDisable', 'LspToggle', 'LspStatus' }) do
+    assert(user_commands[command], 'missing :' .. command .. ' command')
+  end
+
+  -- C and C++ are aliases for one server; language controls last for this session.
+  vim.cmd('LspDisable c')
+  assert(not lsp.is_enabled('cpp'), 'disabling C must disable the shared clangd server')
+  vim.cmd('LspEnable cpp')
+  assert(lsp.is_enabled('c'), 'enabling C++ must enable the shared clangd server')
+  vim.cmd('LspToggle shell')
+  assert(not lsp.is_enabled('shell'), 'LspToggle did not disable bashls')
+  vim.cmd('LspToggle shell')
+  assert(lsp.is_enabled('shell'), 'LspToggle did not enable bashls')
+  local saved_notify, notices = vim.notify, {}
+  vim.notify = function(message) notices[#notices + 1] = tostring(message) end
+  vim.cmd('LspStatus')
+  assert(notices[#notices]:find('makefile', 1, true), 'no-argument status should list all languages')
+  local notice_count = #notices
+  vim.cmd('LspStatus unknown')
+  assert(#notices == notice_count + 1 and notices[#notices]:find('Unknown language', 1, true),
+    'invalid status language should report an error instead of listing all languages')
+  vim.cmd('LspEnable')
+  assert(#notices == notice_count + 2 and notices[#notices]:find('Usage', 1, true),
+    'no-argument enable should show usage')
+  vim.notify = saved_notify
   for _, name in ipairs({ 'nvim-cmp', 'cmp-buffer', 'cmp-path', 'cmp-cmdline', 'cmp-nvim-lsp', 'cmp-calc', 'cmp_luasnip' }) do
     assert(not plugins[name], 'legacy completion plugin remains: ' .. name)
   end
