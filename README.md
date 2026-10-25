@@ -11,12 +11,24 @@
 차 한 잔의 여유로, 코드에 몰입하는 Neovim.
 
 ![Neovim 0.12+](https://img.shields.io/badge/Neovim-0.12%2B-536B4F?style=flat-square&logo=neovim&logoColor=white)
+[![MIT License](https://img.shields.io/badge/License-MIT-536B4F?style=flat-square)](LICENSE)
 
 </div>
 
 ## 소개
 
-Space 단축키, FzfLua 검색, Blink 자동 완성, Markdown 렌더링, Rust·Python 개발 도구를 갖춘 개인용 Neovim 설정입니다. 플러그인은 lazy.nvim으로 관리합니다.
+별도 터미널의 AI 에이전트 알림과 언어별 LSP 전환을 제공하는 Neovim 설정입니다. FzfLua 검색, Blink 자동 완성, Markdown 렌더링을 포함하며 lazy.nvim으로 관리합니다.
+
+![earlgrey.nvim 실제 실행 화면](docs/assets/earlgrey-promo-screenshot.png)
+
+<details>
+<summary>검색 → LSP 전환 → 에이전트 알림 데모</summary>
+
+![실제 Neovim 터미널 녹화. 알림은 시연용 이벤트입니다.](docs/assets/earlgrey-promo-demo.gif)
+
+Linux에서 실제 Neovim을 녹화했습니다. 에이전트 알림은 시연용 이벤트이며, 캡처 방법은 [미디어 안내](docs/assets/README.md)에 있습니다.
+
+</details>
 
 ## 설치
 
@@ -44,6 +56,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 작업은 Unix의 `--mode`, Windows의 `-Mode`로 선택합니다: `all` · `tools` · `config` · `check`. [모드 안내](docs/guide.md#installer-modes)
 
 기존 Neovim 설정은 설치 전에 날짜가 붙은 백업으로 보존합니다. Linux/macOS는 설정을 연결하고, Windows는 복사합니다.
+
+## 설치 후 시작
+
+`nvim` 실행 → `Space ff`로 파일 찾기 → `Space fg`로 내용 검색.
+`:LspStatus`로 언어 서버 상태를, `:AgentNotifications test`로 팝업을 확인합니다.
+실제 에이전트 연결은 [hook 설치 안내](docs/agent-notifications.md)를 따르세요.
+Linux 실행을 확인했으며, macOS/Windows 설치기는 모의 테스트까지 검증했습니다.
 
 ## 자주 쓰는 단축키
 
