@@ -86,6 +86,7 @@ Leader 키는 `Space`입니다.
 - [LSP 설정](docs/lsp.md)
 - [에이전트 완료 알림](docs/agent-notifications.md)
 - [터미널 도구](docs/terminal-tools.md)
+- [소개 글과 홍보 자료](docs/promotion.md)
 
 English and Japanese readers: see the [English guide](docs/guide.md#english) and [日本語ガイド](docs/guide.md#japanese).
 

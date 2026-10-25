@@ -1,7 +1,8 @@
 # earlgrey.nvim 공유 준비
 
 커뮤니티에 복사해 사용할 소개문과 첫 사용자 피드백 안내입니다.
-아래 글은 초안이며 Reddit·OKKY에 게시하지 않았습니다.
+GitHub 소개·태그와 MIT 라이선스·미디어를 반영했고, [awesome-neovim 등록 PR #2571](https://github.com/rockerBOO/awesome-neovim/pull/2571)을 제출했습니다. 자동 검사 7개는 통과했으며, 병합은 유지관리자 검토 대기 중입니다.
+아래 글은 초안이며 Reddit·OKKY에는 연결된 게시 계정이 없어 게시하지 않았습니다.
 
 ## 소개할 내용
 
@@ -21,7 +22,7 @@ FzfLua 검색, Blink 자동 완성, Markdown 렌더링은 함께 쓰는 기본 �
 ## 공개 자료
 
 - [프로젝트와 설치 안내](https://github.com/gamjagoon/earlgrey.nvim)
-- [실제 실행 화면](assets/earlgrey-screenshot.png)
+- [실제 실행 화면](assets/earlgrey-promo-screenshot.png)
 - [터미널 데모](assets/earlgrey-promo-demo.gif)
 - [촬영 방식과 시연 범위](assets/README.md)
 - [에이전트 hook 설정](agent-notifications.md)
@@ -45,7 +46,7 @@ AI 에이전트는 별도 터미널에서 실행하고, 코드는 Neovim에서 �
 Claude Code와 Pi의 완료·지원되는 입력 요청을 Neovim 알림으로 받을 수 있습니다.
 jcode는 턴 완료 알림을 지원합니다. 언어별 LSP를 실행 중에 켜고 끄는 명령도 넣었습니다.
 
-[실제 화면](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-screenshot.png) ·
+[실제 화면](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-promo-screenshot.png) ·
 [짧은 데모](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-promo-demo.gif)
 
 Neovim 0.12 이상이 필요합니다. Linux에서 사용 중이며 macOS·Windows 네이티브
@@ -69,7 +70,7 @@ completion and supported input-needed notifications from Claude Code and Pi;
 jcode notifications indicate turn completion. It also includes per-language
 commands to enable, disable, and inspect LSP support.
 
-[Screenshot](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-screenshot.png) ·
+[Screenshot](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-promo-screenshot.png) ·
 [Short demo](https://github.com/gamjagoon/earlgrey.nvim/blob/main/docs/assets/earlgrey-promo-demo.gif)
 
 Requires Neovim 0.12+. I use it on Linux. Native macOS and Windows execution are
@@ -115,7 +116,7 @@ Add `gamjagoon/earlgrey.nvim`
 
 이 프로젝트는 플러그인이 아닌 개인 설정입니다. 플러그인용 체크 항목을 그대로
 단정하지 않고 기존 설정 카테고리에 추가하는 요청이라고 설명합니다. 라이선스 공개는
-요건 하나를 충족하지만 등재 여부는 관리자가 판단합니다. 이번 작업에서는 등재 PR을 제출하지 않았습니다.
+요건 하나를 충족하지만 등재 여부는 관리자가 판단합니다. [등재 PR #2571](https://github.com/rockerBOO/awesome-neovim/pull/2571)을 제출했으며, 병합 전에는 목록 등록이 완료된 것으로 소개하지 않습니다.
 
 ## 첫 일주일에 확인할 것
 
