@@ -1,6 +1,6 @@
 # earlgrey.nvim · Windows 설치
 
-[← earlgrey.nvim README](../README.md#windows-downloads)
+[← 전체 안내 · Windows 다운로드](guide.md#windows-downloads)
 
 Windows 10/11 x64, PowerShell 5.1 이상을 대상으로 합니다. WSL에서는 Linux 설치기를 사용하세요.
 Windows 구성은 **LLVM-MinGW UCRT + Rust `windows-gnullvm`**을 사용합니다.

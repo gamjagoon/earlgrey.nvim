@@ -6,9 +6,11 @@
 
 ## Zellij
 
-Zellij는 `compact` 레이아웃과 `locked` 모드로 시작합니다. `compact`는 아래쪽에
-한 줄 바를 표시합니다. 잠긴 상태에서는 입력이 셸이나 Neovim으로 전달됩니다.
-`Ctrl+g`를 눌러 Normal 모드로 전환하고, 다시 누르면 잠급니다.
+Zellij는 기본 `default` 레이아웃과 `locked` 모드로 시작합니다. 기본 레이아웃은
+위쪽에 탭 바, 아래쪽에 상태 표시줄을 표시합니다. 잠긴 상태에서는 입력이 셸이나
+Neovim으로 전달되며, 상태 표시줄에서 잠금 해제 단축키를 확인할 수 있습니다.
+`Ctrl+g`를 눌러 Normal 모드로 전환하면 모드별 단축키가 표시되고, 다시 누르면
+잠깁니다.
 기본 테마는 Neovim에서 선택한 Evergarden `winter` 변형의 색을 반영한
 `evergarden-winter`입니다. `evergarden-spring`, `evergarden-summer`,
 `evergarden-fall`도 설치된 Neovim Evergarden 팔레트의 색을 사용합니다. 팔레트
