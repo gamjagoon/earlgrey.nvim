@@ -19,7 +19,7 @@
 
 별도 터미널의 AI 에이전트 알림과 언어별 LSP 전환을 제공하는 Neovim 설정입니다. FzfLua 검색, Blink 자동 완성, Markdown 렌더링을 포함하며 lazy.nvim으로 관리합니다.
 
-![earlgrey.nvim 실제 실행 화면](docs/assets/earlgrey-promo-screenshot.png)
+![earlgrey.nvim 실제 실행 화면](docs/assets/earlgrey-screenshot.png)
 
 <details>
 <summary>검색 → LSP 전환 → 에이전트 알림 데모</summary>
@@ -63,6 +63,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 `:LspStatus`로 언어 서버 상태를, `:AgentNotifications test`로 팝업을 확인합니다.
 실제 에이전트 연결은 [hook 설치 안내](docs/agent-notifications.md)를 따르세요.
 Linux 실행을 확인했으며, macOS/Windows 설치기는 모의 테스트까지 검증했습니다.
+에이전트 hook 설치는 Linux·WSL·macOS를 지원하며 네이티브 Windows는 지원하지 않습니다.
 
 ## 자주 쓰는 단축키
 
@@ -87,3 +88,14 @@ Leader 키는 `Space`입니다.
 - [터미널 도구](docs/terminal-tools.md)
 
 English and Japanese readers: see the [English guide](docs/guide.md#english) and [日本語ガイド](docs/guide.md#japanese).
+
+## 첫 사용 피드백
+
+처음 설치해 볼 분 3~5명의 의견을 받고 있습니다. 설치가 막힌 단계나 헷갈리는
+단축키를 [첫 사용 피드백](https://github.com/gamjagoon/earlgrey.nvim/issues/new?template=first-run.yml)으로 알려주세요.
+OS, Neovim 버전, 실행한 설치 모드와 결과를 남겨주시면 재현에 도움이 됩니다.
+
+## 라이선스
+
+이 저장소의 코드는 [MIT 라이선스](LICENSE)로 배포합니다.
+외부 플러그인과 도구에는 각각의 라이선스가 적용됩니다.

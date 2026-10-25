@@ -1,0 +1,57 @@
+name: "첫 실행 피드백"
+description: "earlgrey.nvim 첫 설치와 실행 경험을 알려 주세요. (Share your first-run experience.)"
+title: "[첫 실행] "
+body:
+  - type: input
+    id: os
+    attributes:
+      label: "운영체제"
+      description: "운영체제와 버전을 적어 주세요. (OS and version.)"
+      placeholder: "예: Ubuntu 24.04 / Windows 11 + WSL2 / macOS 15"
+    validations:
+      required: true
+
+  - type: input
+    id: neovim-version
+    attributes:
+      label: "Neovim 버전"
+      description: "Neovim 버전을 적어 주세요. (Neovim version.)"
+      placeholder: "예: nvim --version 첫 줄"
+    validations:
+      required: true
+
+  - type: textarea
+    id: install-and-steps
+    attributes:
+      label: "설치 방식과 시도한 작업"
+      description: "어떤 방식으로 설치했고 어떤 단계나 명령을 시도했나요? (Install method and steps tried.)"
+      placeholder: "사용한 설치 방법과 실행한 단계 또는 명령을 적어 주세요."
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: "실행 결과"
+      description: "기대한 결과와 실제 결과를 적어 주세요. (Expected and actual outcome.)"
+      placeholder: "무엇을 기대했고 어떤 일이 있었는지 적어 주세요."
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-excerpt
+    attributes:
+      label: "오류 내용 (선택)"
+      description: "오류가 있었다면 관련 부분만 공유해 주세요. (Optional error excerpt.) 계정 정보, 토큰, 홈 디렉터리명은 지워 주세요. (Remove credentials, tokens, and home-directory names.)"
+      placeholder: "오류 메시지의 관련 부분만 붙여 넣으세요. 민감한 정보와 개인 경로는 먼저 삭제해 주세요."
+    validations:
+      required: false
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: "개선 제안 (선택)"
+      description: "불편한 점이나 개선 아이디어가 있으면 적어 주세요. (Optional improvement suggestion.)"
+      placeholder: "더 나은 첫 실행 경험을 위해 바뀌면 좋을 점을 적어 주세요."
+    validations:
+      required: false

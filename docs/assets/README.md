@@ -47,3 +47,39 @@ deep forest-green background, warm ivory ceramic, amber highlights and muted
 sage leaves. Mood: cozy, focused, contemplative. Constraints: NO TEXT, NO
 LETTERS, no logos, no watermark, no computer, no extra decoration, polished
 finished illustration.
+
+## Reproducible sample-project capture
+
+`earlgrey-screenshot.png` and `earlgrey-demo.gif` are a separate sample-project
+capture pair. The README uses this screenshot and the continuous
+`earlgrey-promo-demo.gif` described above. A real Neovim 0.12.6 TUI ran the checked-out `nvim/` config in a
+120 × 36 tmux PTY with true color. The images were rendered from
+`tmux capture-pane -e` output with pyte 0.8.2 and Pillow 13.0.0 using DejaVu
+Sans Mono; they are terminal captures, not desktop screenshots. The PNG is
+1080 × 720 (about 51 KiB); the six-frame GIF is 25 seconds (about 158 KiB).
+That sample-project GIF is an edited sequence of six captured states, not a
+continuous recording.
+
+The demo shows FzfLua file search and live grep, a Python LSP toggle and status,
+and a completion event sent through the repository's `script/agent-notify.py`
+to the Neovim inbox. That event was manually created by the capture script and
+is marked `DEMO ONLY - no live agent run`; it does not represent a real agent
+execution or successful work. Desktop notification and sound backends were
+disabled. The LSP notification is the live session status, not evidence of
+diagnostic or analysis quality.
+
+Recreate it on Linux with tmux, Neovim 0.12+, this project's installed plugins,
+`fd`, `fzf`, `ripgrep`, fontconfig, DejaVu Sans Mono, Python, Pillow, and pyte.
+The script uses a temporary config link to this checkout and temporary Neovim
+state/sample-project directories; it reuses the installed plugin data and
+writes only these two images in `docs/assets/`:
+
+```sh
+python3 -m venv /tmp/earlgrey-capture-env
+/tmp/earlgrey-capture-env/bin/python -m pip install Pillow==13.0.0 pyte==0.8.2
+/tmp/earlgrey-capture-env/bin/python script/capture-demo.py
+```
+
+The recorded tool versions were Neovim 0.12.6, tmux 3.4, Fzf 0.44.1, fd 9.0.0,
+and ripgrep 15.2.0. Search results and LSP server state depend on the local
+installed tools when the script is rerun.
