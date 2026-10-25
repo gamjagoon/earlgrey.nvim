@@ -76,7 +76,7 @@ Linux/macOS 설치기는 Rust/Python 서버와 외부 도구를 함께 설치합
 fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust 및 rust-analyzer/rustfmt입니다.
 Linux는 X11/Wayland 클립보드 도구도 설치합니다. Unix의 사용자 도구 PATH는
 쉘 초기화 파일에서 불러옵니다. Windows 자동 설치기는 현재 프로세스의 PATH를 갱신합니다.
-수동 설치 시에는 도구 경로를 등록한 뒤 새 터미널을 여세요. `check-tools-windows.ps1`로 실행 중인 도구와 공식 링크를
+수동 설치 시에는 도구 경로를 등록한 뒤 새 터미널을 여세요. `install-windows.ps1 -Mode Check`로 실행 중인 도구와 공식 링크를
 확인할 수 있습니다. 시스템 PATH의 오래된 도구가 먼저 실행된다면 해당 설치를 갱신하세요.
 
 ```sh
@@ -88,23 +88,46 @@ bash script/install-macos.sh
 
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All
 # Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
-# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
 Linux/macOS는 도구 설치 → 설정 백업/연결 → 플러그인 복원 → 파서 설치 →
-시작·검색 검사를 수행합니다. Windows는 `-InstallTools`로 winget 도구 설치를 함께 수행하며, 옵션을 생략하면 기존 도구를 점검한 뒤 설정을 백업/복사합니다.
+시작·검색 검사를 수행합니다. 세 OS 모두 기본 모드는 전체 설치인 `all`입니다. Windows도 WinGet 도구 설치를 함께 수행합니다.
 Windows는 LLVM-MinGW UCRT와 Rust `windows-gnullvm`을 사용하며 Visual Studio Build Tools를 설치하지 않습니다.
-Windows 점검만 실행하려면 `check-tools-windows.ps1`을 사용하세요.
-도구만 설치하려면 `install-tools-linux.sh`, `install-tools-macos.sh`를 사용합니다.
-Unix에서 도구 설치를 생략하려면 `--skip-tools`를 지정합니다.
+Windows 점검만 실행하려면 `install-windows.ps1 -Mode Check`을 사용하세요.
+Unix는 `--mode tools`로 도구만, `--mode config`로 기존 도구를 사용한 설정·플러그인만 설치합니다.
+`--mode check`는 도구 검사만 실행합니다. Windows에서는 각각 `-Mode Tools`, `-Mode Config`, `-Mode Check`를 지정합니다.
 Neovim·tree-sitter는 실행 시 공식 최신 안정 릴리스를 조회하며, 설치된 버전이
 이보다 오래되면 갱신합니다. 다른 도구는 패키지 관리자가 제공하는 최신 버전을 사용합니다.
 최소 버전 검사는 유지합니다. 로컬 `lazy-lock.json`이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을 설치하고, 있으면 해당 버전으로 복원합니다.
 lockfile은 로컬에서 생성하며 Git 추적에서 제외합니다.
 실제 변경 없이 명령을 확인하려면 Unix는 `--dry-run`, Windows는 `-WhatIf`를 사용합니다.
+
+<a id="installer-modes"></a>
+
+설치 파일은 OS별로 유지하며, 작업은 아래 모드로 선택합니다. 기본값은 `all`입니다.
+
+| 작업 | Linux/macOS | Windows |
+| --- | --- | --- |
+| 도구 + 설정·플러그인 설치 | `--mode all` | `-Mode All` |
+| 도구만 설치 | `--mode tools` | `-Mode Tools` |
+| 기존 도구로 설정·플러그인 설치 | `--mode config` | `-Mode Config` |
+| 도구 검사만 실행 | `--mode check` | `-Mode Check` |
+
+```sh
+bash script/install-linux.sh --mode tools
+bash script/install-linux.sh --mode config
+bash script/install-macos.sh --mode check
+bash script/install-macos.sh --mode all --dry-run
+```
+
+`config`는 기존 설정을 백업하고 플러그인·파서를 설치하므로 인터넷 연결이 필요합니다.
+`check`는 설치·다운로드·설정 파일 변경 없이 현재 도구만 확인합니다.
+공통 구현 파일은 내부 보조 파일이며 직접 실행할 필요가 없습니다.
+
 
 세 플랫폼 모두 선언된 플러그인과 의존성을 Lazy가 다운로드합니다. 기존 플랫폼의 플러그인 바이너리를 복사하지 않습니다.
 
@@ -296,7 +319,7 @@ fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust, rust-analyz
 installs X11/Wayland clipboard tools. Unix shell startup files load the user tool
 PATH. Windows automation refreshes the current process PATH; manual installations
 require registering tool paths and opening a new terminal. Use
-`check-tools-windows.ps1` to inspect resolved tools and official links. Upgrade
+`install-windows.ps1 -Mode Check` to inspect resolved tools and official links. Upgrade
 older system tools if Machine PATH selects them first.
 
 ```sh
@@ -308,19 +331,18 @@ bash script/install-macos.sh
 
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All
 # Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
-# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
 Linux/macOS installers install tools, back up/link configuration, restore plugins,
-install parsers, and run startup/search checks. Windows installs prerequisites with winget when `-InstallTools` is supplied; otherwise it
-checks existing tools before backing up/copying configuration and installing plugins.
+install parsers, and run startup/search checks. All platforms default to full installation (`all`), including WinGet prerequisites on Windows.
 Windows uses LLVM-MinGW UCRT and Rust `windows-gnullvm`, without Visual Studio Build Tools.
-Use `check-tools-windows.ps1` to inspect Windows prerequisites only.
-Use `install-tools-linux.sh` or `install-tools-macos.sh` for tools alone, or
-`--skip-tools` on Unix to keep existing tools.
+Use `install-windows.ps1 -Mode Check` to inspect Windows prerequisites only.
+On Unix, use `--mode tools` for tools alone, `--mode config` for configuration/plugins with existing tools,
+and `--mode check` for read-only prerequisite checks. Windows accepts `-Mode Tools`, `-Mode Config`, and `-Mode Check`.
 Neovim and tree-sitter resolve the latest official stable release at runtime and
 upgrade older installations. Other tools use the latest versions offered by their
 package managers. Minimum compatibility checks remain. Without a local `lazy-lock.json`,
@@ -517,7 +539,7 @@ Git、curl、C ツールチェーン、Neovim 0.12+、ネイティブ tree-sitte
 fd、rg、fzf (Unix 0.36+ / Windows 0.52.1+)、Node/npm、Pyright、Rust、rust-analyzer、rustfmt を導入します。
 Linux は X11/Wayland のクリップボードツールも導入します。Unix はシェルの
 初期化ファイルを更新します。Windows の自動導入は現在の PATH を更新します。
-手動導入では PATH を設定してから新しいターミナルを開き、`check-tools-windows.ps1` でツールと公式リンクを確認します。
+手動導入では PATH を設定してから新しいターミナルを開き、`install-windows.ps1 -Mode Check` でツールと公式リンクを確認します。
 古いシステムのツールが先に選択される場合は、そのインストールを更新してください。
 
 ```sh
@@ -529,19 +551,19 @@ bash script/install-macos.sh
 
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All
 # Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
-# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
 Linux/macOS はツール導入、設定のバックアップとリンク、プラグイン復元、
-パーサー導入、起動・検索テストを実行します。Windows は `-InstallTools` で
-WinGet によるツール導入も行い、省略時は既存ツールを確認して設定を導入します。
+パーサー導入、起動・検索テストを実行します。すべての OS で既定は全体導入の `all` です。
+Windows でも WinGet によるツール導入を行います。
 Windows は LLVM-MinGW UCRT と Rust `windows-gnullvm` を使用し、Visual Studio Build Tools を導入しません。
-Windows の確認のみは `check-tools-windows.ps1` を使用します。
-ツールのみは `install-tools-linux.sh`、`install-tools-macos.sh`、Unix での
-ツール導入省略は `--skip-tools` を指定します。
+Windows の確認のみは `install-windows.ps1 -Mode Check` を使用します。
+Unix は `--mode tools` でツールのみ、`--mode config` で既存ツールを使う設定・プラグイン導入、
+`--mode check` で確認のみを実行します。Windows は `-Mode Tools`、`-Mode Config`、`-Mode Check` を指定します。
 Neovim と tree-sitter は実行時に公式の最新安定リリースを取得し、古い導入を更新します。
 その他のツールはパッケージマネージャーが提供する最新版を使用します。
 最低バージョンの確認は維持します。ローカルの `lazy-lock.json` がなければ

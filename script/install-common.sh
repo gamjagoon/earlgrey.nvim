@@ -5,25 +5,63 @@ set -euo pipefail
 INSTALL_SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 INSTALL_REPO_ROOT=$(cd -- "$INSTALL_SCRIPT_DIR/.." && pwd)
 INSTALL_DRY_RUN=false
-export INSTALL_SKIP_TOOLS=false
+INSTALL_MODE=all
+INSTALL_MODE_EXPLICIT=false
+INSTALL_SKIP_TOOLS_ALIAS=false
 export PATH="$HOME/.local/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 
 install_usage() {
-    printf 'Usage: bash %s [--dry-run] [--skip-tools] [--help]\n' "${0##*/}"
-    printf '%s\n' 'Installs required tools, backs up and links configuration, installs/restores plugins and checks startup.'
-    printf '%s\n' '--dry-run prints the operations without changing files or installing packages.'
-    printf '%s\n' '--skip-tools uses existing tools (full installers only); versions are still checked.'
+    printf 'Usage: bash %s [--mode all|tools|config|check] [--dry-run] [--help]\n' "${0##*/}"
+    printf '%s\n' 'Modes: all installs tools and configuration; tools installs prerequisites; config links configuration and installs/restores plugins; check validates tools only.'
+    printf '%s\n' '--mode defaults to all. --mode can also be written as --mode=VALUE.'
+    printf '%s\n' '--dry-run prints the selected operations without changing files or using the network.'
+    printf '%s\n' '--skip-tools is a compatibility alias for --mode config.'
+}
+
+install_set_mode() {
+    case "$1" in
+        all|tools|config|check) ;;
+        *) printf 'Unknown install mode: %s\n' "$1" >&2; return 2 ;;
+    esac
+    if [[ "$INSTALL_MODE_EXPLICIT" == true && "$INSTALL_MODE" != "$1" ]]; then
+        printf '%s\n' 'Conflicting --mode values.' >&2
+        return 2
+    fi
+    if [[ "$INSTALL_SKIP_TOOLS_ALIAS" == true && "$1" != config ]]; then
+        printf '%s\n' '--skip-tools conflicts with any mode other than config.' >&2
+        return 2
+    fi
+    INSTALL_MODE=$1
+    INSTALL_MODE_EXPLICIT=true
 }
 
 install_parse_args() {
-    for arg in "$@"; do
+    while [[ $# -gt 0 ]]; do
+        arg=$1
+        shift
         case "$arg" in
             --dry-run) INSTALL_DRY_RUN=true ;;
-            --skip-tools) INSTALL_SKIP_TOOLS=true ;;
+            --skip-tools)
+                INSTALL_SKIP_TOOLS_ALIAS=true
+                if [[ "$INSTALL_MODE_EXPLICIT" == true && "$INSTALL_MODE" != config ]]; then
+                    printf '%s\n' '--skip-tools conflicts with any mode other than config.' >&2
+                    return 2
+                fi
+                ;;
+            --mode)
+                if [[ $# -eq 0 ]]; then
+                    printf '%s\n' '--mode requires all, tools, config, or check.' >&2
+                    return 2
+                fi
+                install_set_mode "$1" || return $?
+                shift
+                ;;
+            --mode=*) install_set_mode "${arg#*=}" || return $? ;;
             -h|--help) install_usage; exit 0 ;;
             *) printf 'Unknown option: %s\n' "$arg" >&2; exit 2 ;;
         esac
     done
+    if [[ "$INSTALL_SKIP_TOOLS_ALIAS" == true ]]; then INSTALL_MODE=config; fi
 }
 
 install_run() {
@@ -200,6 +238,81 @@ install_language_tools() {
     npm install --global --prefix "$HOME/.local" pyright
 }
 
+install_tools_linux() {
+    install_require_platform Linux
+    if command -v apt-get >/dev/null 2>&1; then
+        install_admin apt-get update
+        install_admin apt-get install -y git curl ca-certificates tar gzip build-essential fd-find ripgrep fzf nodejs npm xclip wl-clipboard
+    elif command -v dnf >/dev/null 2>&1; then
+        install_admin dnf install -y git curl ca-certificates tar gzip gcc gcc-c++ make fd-find ripgrep fzf nodejs npm xclip wl-clipboard
+    elif command -v pacman >/dev/null 2>&1; then
+        install_admin pacman -S --needed --noconfirm git curl ca-certificates tar gzip base-devel fd ripgrep fzf nodejs npm xclip wl-clipboard
+    else
+        printf '%s\n' 'Supported Linux package managers: apt-get, dnf, pacman.' >&2
+        return 1
+    fi
+    if "$INSTALL_DRY_RUN"; then
+        printf '%s\n' 'Expose fdfind as ~/.local/bin/fd when the distro does not provide fd.'
+    elif ! command -v fd >/dev/null 2>&1 && command -v fdfind >/dev/null 2>&1; then
+        mkdir -p "$HOME/.local/bin"
+        install_link "$(command -v fdfind)" "$HOME/.local/bin/fd"
+    fi
+    install_native_binaries linux
+    install_language_tools
+    install_persist_path
+}
+
+install_tools_macos() {
+    install_require_platform Darwin
+    # The current upstream Homebrew bootstrap supports Apple Silicon only.
+    if ! "$INSTALL_DRY_RUN" && ! command -v brew >/dev/null 2>&1 && [[ $(uname -m) != arm64 ]]; then
+        printf '%s\n' 'Intel macOS requires an existing working Homebrew installation.' >&2
+        printf '%s\n' 'The current Homebrew bootstrap supports Apple Silicon only; alternatively provision tools and use install-macos.sh --mode config.' >&2
+        return 1
+    fi
+    if ! "$INSTALL_DRY_RUN" && ! xcode-select -p >/dev/null 2>&1; then
+        xcode-select --install
+        printf '%s\n' 'Finish installing Apple Command Line Tools in the opened dialog, then rerun this script.' >&2
+        return 1
+    fi
+    if ! "$INSTALL_DRY_RUN" && ! command -v brew >/dev/null 2>&1; then
+        local temp
+        temp=$(mktemp -d)
+        (
+            trap 'rm -rf -- "$temp"' EXIT
+            curl --fail --location https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$temp/brew-install.sh"
+            /bin/bash "$temp/brew-install.sh"
+        )
+    fi
+    install_run brew install git curl fd ripgrep fzf node
+    install_native_binaries macos
+    install_language_tools
+    install_persist_path
+    # macOS provides pbcopy/pbpaste without an extra clipboard package.
+}
+
+install_run_mode() {
+    local required_platform=$1 os=$2
+    shift 2
+    install_parse_args "$@"
+    install_require_platform "$required_platform"
+    if [[ "$os" == macos ]]; then
+        export PATH="$HOME/.local/bin:${CARGO_HOME:-$HOME/.cargo}/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+    fi
+    case "$INSTALL_MODE" in
+        all)
+            if [[ "$os" == linux ]]; then install_tools_linux; else install_tools_macos; fi
+            install_config_and_plugins
+            ;;
+        tools)
+            if [[ "$os" == linux ]]; then install_tools_linux; else install_tools_macos; fi
+            install_check_tools
+            ;;
+        config) install_config_and_plugins ;;
+        check) install_check_tools ;;
+    esac
+}
+
 install_persist_path() {
     if "$INSTALL_DRY_RUN"; then
         printf '%s\n' 'Add an idempotent earlgrey.nvim PATH snippet to ~/.profile, ~/.bashrc, ~/.zprofile, ~/.zshrc (and existing ~/.bash_profile).'
@@ -237,8 +350,8 @@ install_check_tools() {
     install_version_at_least "$version" 0.26.1 || { printf 'tree-sitter >=0.26.1 required; found %s.\n' "$version" >&2; return 1; }
     version=$(install_binary_version fzf)
     install_version_at_least "$version" 0.36.0 || { printf 'fzf >=0.36 required; found %s. Update your distro/Homebrew package.\n' "$version" >&2; return 1; }
-    rust-analyzer --version
-    rustfmt --version
+    RUSTUP_AUTO_INSTALL=0 rust-analyzer --version
+    RUSTUP_AUTO_INSTALL=0 rustfmt --version
 }
 
 install_config_and_plugins() {

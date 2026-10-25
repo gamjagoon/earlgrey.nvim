@@ -14,12 +14,16 @@ Windows의 [App Installer / WinGet](https://learn.microsoft.com/windows/package-
 
 ```powershell
 # 도구 + 설정 + 플러그인/파서 + 검증
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All
 # 도구만 설치
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 # 실제 설치 없이 계획 확인
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools -WhatIf
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All -WhatIf
 ```
+
+모든 작업은 `install-windows.ps1`에서 실행합니다. 기본값은 `-Mode All`이며,
+`-Mode Tools`는 도구만, `-Mode Config`는 기존 도구로 설정·플러그인만 설치합니다.
+`-Mode Check`는 다운로드나 설정 변경 없이 현재 도구를 검사합니다.
 
 `winget` 소스에서 정확한 ID로 최신 제공 버전을 설치·갱신하며 패키지/소스 약관에 자동 동의합니다.
 일부 설치기는 UAC 승인을 요청할 수 있습니다. 재부팅을 자동으로 실행하지 않으며,
@@ -44,7 +48,7 @@ ripgrep 패키지명의 `MSVC`는 배포 바이너리의 종류입니다. 개발
 
 설치기는 현재 프로세스의 PATH를 갱신합니다. LLVM-MinGW의 전체 `bin` 디렉터리는 WinGet 패키지가 PATH에 등록합니다.
 사용자가 저장한 PATH를 스크립트에서 덮어쓰지 않습니다. 도구만 별도 `powershell -File` 프로세스에서
-설치했다면 다음 작업은 새 터미널에서 실행하세요. 통합 `-InstallTools` 설치는 같은 프로세스의 갱신된 PATH를 사용합니다.
+설치했다면 다음 작업은 새 터미널에서 실행하세요. 통합 `-Mode All` 설치는 같은 프로세스의 갱신된 PATH를 사용합니다.
 
 ## Rust와 컴파일러 선택
 
@@ -96,9 +100,9 @@ Rust 도구는 보통 `%USERPROFILE%\.cargo\bin`, Pyright는 `%APPDATA%\npm`에 
 # 현재 PowerShell에서 환경 선택 후 읽기 전용 검사
 . .\script\windows-compiler.ps1
 Initialize-WindowsCompiler
-.\script\check-tools-windows.ps1
+.\script\install-windows.ps1 -Mode Check
 # 기존 도구로 설정과 플러그인 설치 (컴파일러 환경은 자동 초기화)
-.\script\install-windows.ps1
+.\script\install-windows.ps1 -Mode Config
 ```
 
 점검기는 컴파일러 대상/UCRT 라이브러리, Rust 활성 툴체인과 `rustc -vV` 호스트를 확인합니다.

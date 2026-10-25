@@ -14,7 +14,13 @@ function global:nvim.exe { $global:LASTEXITCODE=0; 'NVIM v0.12.0' }
 function global:tree-sitter.exe { $global:LASTEXITCODE=0; 'tree-sitter 0.26.1' }
 function global:fzf.exe { $global:LASTEXITCODE=0; '0.52.1' }
 function global:rustc.exe { $global:LASTEXITCODE=0; 'host: ' + $global:CompilerTestRustHost }
-function global:rustup.exe { $global:LASTEXITCODE=0; 'stable-x86_64-pc-windows-gnullvm (environment override)' }
+function global:rustup.exe {
+    $global:LASTEXITCODE=0
+    if ($args -contains 'show') { 'stable-x86_64-pc-windows-gnullvm (environment override)' }
+    elseif ($args -contains 'run' -and $args -contains 'rustc' -and $args -contains '-vV') { 'host: ' + $global:CompilerTestRustHost }
+    elseif ($args -contains 'run') { 'mock rust tool 1.0.0' }
+    else { 'rustup 1.28.0' }
+}
 $toolNames = @('cargo.exe','git.exe','curl.exe','fd.exe','rg.exe','node.exe','npm.cmd','rust-analyzer.exe','rustfmt.exe','pyright-langserver.cmd')
 foreach ($name in $toolNames) { Set-Item -Path ('Function:global:'+$name) -Value { $global:LASTEXITCODE=0 } }
 try {
@@ -48,11 +54,11 @@ try {
     if ([Environment]::GetEnvironmentVariable('CFLAGS_x86_64-pc-windows-msvc','Process') -ne '-O1 --target=x86_64-w64-windows-gnu') { throw 'Generic CFLAGS were not preserved' }
     $before = @{}
     foreach ($name in $names) { $before[$name]=[Environment]::GetEnvironmentVariable($name,'Process') }
-    & (Join-Path $project 'script/check-tools-windows.ps1')
+    & (Join-Path $project 'script/install-windows.ps1') -Mode Check
     foreach ($name in $names) { if ([string]$before[$name] -ne [string][Environment]::GetEnvironmentVariable($name,'Process')) { throw "Checker changed $name" } }
     $global:CompilerTestRustHost='x86_64-pc-windows-msvc'
     $rejected=$false
-    try { & (Join-Path $project 'script/check-tools-windows.ps1') } catch { $rejected=$true }
+    try { & (Join-Path $project 'script/install-windows.ps1') -Mode Check } catch { $rejected=$true }
     if (-not $rejected) { throw 'MSVC Rust host accepted' }
     $global:CompilerTestTarget='x86_64-pc-windows-msvc'
     $env:CC='preserve on failure'

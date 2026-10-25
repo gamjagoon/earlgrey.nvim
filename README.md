@@ -2,6 +2,8 @@
 
 # earlgrey.nvim
 
+[English](docs/guide.md#english) · [日本語](docs/guide.md#japanese)
+
 **얼그레이 네오빔 · A warm cup. A focused editor.**
 
 <img src="docs/assets/earlgrey-tea.png" alt="A steaming cup of amber Earl Grey tea with bergamot and tea leaves on a forest-green background" width="960">
@@ -36,8 +38,10 @@ bash script/install-macos.sh
 Windows 10/11에서는 PowerShell 5.1 이상과 WinGet이 필요합니다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode All
 ```
+
+작업은 Unix의 `--mode`, Windows의 `-Mode`로 선택합니다: `all` · `tools` · `config` · `check`. [모드 안내](docs/guide.md#installer-modes)
 
 기존 Neovim 설정은 설치 전에 날짜가 붙은 백업으로 보존합니다. Linux/macOS는 설정을 연결하고, Windows는 복사합니다.
 
