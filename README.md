@@ -175,6 +175,8 @@ Markdown 파일의 제목·목록·표·코드 블록을 렌더링합니다. `:R
 
 ### 단축키
 
+Zellij·GitUI의 단축키와 설정 적용 방법은 [터미널 도구 안내](docs/terminal-tools.md)를 참고하세요.
+
 Leader는 **Space**, local leader는 `\`입니다.
 
 | 단축키 | 동작 |
@@ -398,6 +400,8 @@ Treesitter parser for the file's language; install missing parsers with
 
 ### Shortcuts
 
+See [terminal tool shortcuts](docs/terminal-tools.md) for Zellij/GitUI bindings and setup.
+
 Leader is **Space**; local leader is `\`.
 
 | Shortcut | Action |
@@ -610,6 +614,8 @@ tmux、Zellij、GitUI の個別設定は `dotfile/` にあり、Neovim のセッ
 必要に応じて `:TSInstall lua rust python c cpp` で不足しているパーサーをインストールしてください。
 
 ### ショートカット
+
+Zellij/GitUI のキー設定と導入方法は [ターミナルツール案内](docs/terminal-tools.md)を参照してください。
 
 Leader は **Space**、local leader は `\` です。
 

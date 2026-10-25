@@ -17,13 +17,15 @@
 
 	status_reset_item: Some(( code: Char('U'), modifiers: "SHIFT")),
 
-    diff_reset_lines: Some(( code: Char('u'), modifiers: "")),
+    // Resetting diff lines changes the worktree; use a deliberate chord.
+    diff_reset_lines: Some(( code: Char('r'), modifiers: "CONTROL")),
     diff_stage_lines: Some(( code: Char('s'), modifiers: "")),
 
     stashing_save: Some(( code: Char('w'), modifiers: "")),
     stashing_toggle_index: Some(( code: Char('m'), modifiers: "")),
 
-    stash_open: Some(( code: Char('l'), modifiers: "")),
+    // Keep `l` available for Vim-style right movement.
+    stash_open: Some(( code: Char('O'), modifiers: "SHIFT")),
 
     abort_merge: Some(( code: Char('M'), modifiers: "SHIFT")),
 )
