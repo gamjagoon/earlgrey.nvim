@@ -38,6 +38,16 @@ return require("lazy").setup({
 			require("agent_notifications").setup()
 		end,
 	},
+	{
+		"folke/snacks.nvim",
+		lazy = false,
+		opts = {
+			image = {
+				enabled = #vim.api.nvim_list_uis() > 0,
+				force = false,
+			},
+		},
+	},
 	-- UI/colorscheme
 	"folke/tokyonight.nvim",
 	{

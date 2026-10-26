@@ -85,6 +85,7 @@ Leader 키는 `Space`입니다.
 - [Windows 설치와 도구 설정](docs/windows-setup.md)
 - [LSP 설정](docs/lsp.md)
 - [에이전트 완료 알림](docs/agent-notifications.md)
+- [이미지 미리보기 · Image preview · 画像プレビュー](docs/images.md)
 - [터미널 도구](docs/terminal-tools.md)
 - [소개 글과 홍보 자료](docs/promotion.md)
 
