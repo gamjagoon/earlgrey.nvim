@@ -32,7 +32,7 @@ return require("lazy").setup({
 		priority = 900,
 		config = function()
 			local notify = require("notify")
-			notify.setup({ stages = "static", timeout = 5000, render = "wrapped-compact",
+			notify.setup({ stages = "static", timeout = 5000, render = "wrapped-default",
 				max_width = 60, background_colour = "#1a1b26" })
 			vim.notify = notify
 			require("agent_notifications").setup()
@@ -41,6 +41,7 @@ return require("lazy").setup({
 	{
 		"folke/snacks.nvim",
 		lazy = false,
+		priority = 1000,
 		opts = {
 			image = {
 				enabled = #vim.api.nvim_list_uis() > 0,
