@@ -68,7 +68,15 @@ require("evergarden").setup {
     keyword = { 'italic' },
     comment = { 'italic' },
   },
-  overrides = {},
+  overrides = function(colors)
+    return {
+      BlinkCmpMenuSelection = {
+        fg = colors.text,
+        bg = colors.surface1,
+        style = { 'bold' },
+      },
+    }
+  end,
   color_overrides = {},
   integrations = {
     blink_cmp = true,
