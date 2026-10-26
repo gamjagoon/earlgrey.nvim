@@ -17,7 +17,7 @@
 
 ## 소개
 
-별도 터미널의 AI 에이전트 알림과 언어별 LSP 전환을 제공하는 Neovim 설정입니다. FzfLua 검색, Blink 자동 완성, Markdown 렌더링을 포함하며 lazy.nvim으로 관리합니다.
+별도 터미널의 AI 에이전트 알림과 언어별 LSP 전환을 제공하는 Neovim 설정입니다. FzfLua 검색, Blink 자동 완성, Markdown 구문 강조와 이미지 미리보기를 포함하며 lazy.nvim으로 관리합니다.
 
 ![earlgrey.nvim 실제 실행 화면](docs/assets/earlgrey-screenshot.png)
 

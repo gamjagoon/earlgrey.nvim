@@ -91,18 +91,13 @@ local function check()
   vim.bo.buftype = ''
   vim.api.nvim_buf_set_name(markdown_buf, vim.fn.tempname() .. '-plugin-check.md')
   vim.api.nvim_buf_set_lines(markdown_buf, 0, -1, false, {
-    '# Rendered heading', '', '- **Markdown** item', '', '```text', 'code block', '```', '', 'cursor here',
+    '# Markdown heading', '', '- **Markdown** item', '', '```text', 'code block', '```', '', 'cursor here',
   })
   vim.api.nvim_win_set_cursor(0, { 9, 0 })
   vim.bo.filetype = 'markdown'
   assert(vim.treesitter.language.add('markdown_inline'), 'markdown_inline parser unavailable')
   local parser = vim.treesitter.get_parser(markdown_buf, 'markdown')
   assert(#parser:parse() > 0, 'Markdown parser produced no syntax tree')
-  require('render-markdown').render({ buf = markdown_buf, win = vim.api.nvim_get_current_win() })
-  assert(vim.wait(3000, function()
-    local ns = vim.api.nvim_get_namespaces()['render-markdown.nvim']
-    return ns and #vim.api.nvim_buf_get_extmarks(markdown_buf, ns, 0, -1, {}) > 0
-  end, 20), 'Markdown renderer produced no decorations')
 
   assert(vim.o.laststatus == 3, 'global statusline is not enabled')
   local statusline = require('lualine').statusline(true)
@@ -150,7 +145,7 @@ local function check()
   local messages = vim.api.nvim_exec2('messages', { output = true }).output
   assert(not messages:find('Error ', 1, true) and not messages:find('stack traceback:', 1, true),
     'reported runtime error: ' .. messages)
-  print('PASS: startup, Blink snippet acceptance, Markdown rendering, lualine and per-buffer Rust commands')
+  print('PASS: startup, Blink snippet acceptance, Markdown parsing, lualine and per-buffer Rust commands')
 end
 
 local ok, err = xpcall(check, debug.traceback)

@@ -34,7 +34,7 @@
 | 빠른 파일·내용 검색 | FzfLua + `fd` + `ripgrep` |
 | 자연스러운 완성 | Blink 자동 완성 + LuaSnip 스니펫 |
 | Rust·Python 개발 | rustaceanvim, rust-analyzer, Pyright |
-| 읽기 좋은 Markdown | 제목·목록·표·코드 블록 렌더링 |
+| 읽기 좋은 Markdown | Treesitter 구문 강조 · Snacks 인라인 이미지 미리보기 |
 | 에이전트 완료 알림 | nvim-notify 팝업·기록, 외부 터미널 hook 연결 |
 
 [설치](#설치) · [단축키](#단축키) · [검증](#검증) · [에이전트 알림 설정](agent-notifications.md)
@@ -151,8 +151,8 @@ Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`�
 - `:Lazy sync`: 플러그인 설치·정리·갱신 및 로컬 lockfile 생성
 - `:Lazy update`: 플러그인과 로컬 lockfile 갱신. lockfile은 커밋하지 않습니다.
 - `:checkhealth`: 설치된 도구와 제공자 점검
-- Markdown 렌더링용 `markdown`, `markdown_inline` Treesitter 파서는 자동으로
-  설치합니다. 다른 파서는 `:TSInstall rust python c cpp lua bash asm`처럼
+- Markdown 구문 강조와 인라인 이미지 표시용 `markdown`, `markdown_inline` Treesitter 파서는
+  자동으로 설치합니다. 다른 파서는 `:TSInstall rust python c cpp lua bash asm`처럼
   명시적으로 설치합니다.
 
 ### 설정 구성
@@ -184,10 +184,8 @@ LuaSnip 스니펫을 연결합니다. 사전 빌드된 Rust 퍼지 매처는 자
 선택지를 바꿉니다. `Ctrl-b/f`는 완성 문서를 스크롤합니다. `:`, `/`, `?` 명령줄에서도
 완성을 제공하며 `Tab`/`Shift-Tab`으로 이동하고 `Ctrl-y`로 확정합니다.
 
-[render-markdown.nvim](https://github.com/MeanderingProgrammer/render-markdown.nvim)은
-Markdown 파일의 제목·목록·표·코드 블록을 렌더링합니다. `:RenderMarkdown toggle`로
-렌더링을 켜거나 끕니다. Neovim 내부에서 실행되는 LSP를 통해 Blink에 체크박스와
-콜아웃 완성을 제공합니다.
+`markdown`, `markdown_inline` Treesitter 파서가 Markdown 구문 강조를 지원합니다.
+[Snacks 이미지 모듈](images.md)은 지원되는 터미널에서 Markdown 이미지 참조를 표시합니다.
 [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)은 현재 테마 색상에 맞춘
 전역 상태줄에 모드, Git 브랜치·변경, 진단, 파일명·파일 정보, 커서 위치를 표시합니다.
 
@@ -261,7 +259,7 @@ nvim --headless '+luafile tests/test_compat.lua' +qa
 
 설치 테스트는 임시 HOME/XDG 경로를 사용하므로 실제 설정을 교체하지 않습니다.
 Neovim 검사는 플러그인 구성, 완성 기능 협상, 여러 버퍼에서의 Rust 단축키,
-자동 완성·스니펫, Markdown 렌더링, 상태줄을 확인합니다.
+자동 완성·스니펫, Markdown 구문 분석, 상태줄을 확인합니다.
 
 ---
 
@@ -372,8 +370,8 @@ automatically. Select a Nerd Font in your terminal separately for icon display.
 - `:Lazy update` updates plugins and the local lockfile. Do not commit the lockfile.
 - `:checkhealth` checks installed tools and providers.
 - The `markdown` and `markdown_inline` Treesitter parsers are installed for
-  Markdown rendering. Other parsers are installed explicitly, for example
-  `:TSInstall rust python c cpp lua bash asm`.
+  Markdown syntax highlighting and inline image references. Other parsers are
+  installed explicitly, for example `:TSInstall rust python c cpp lua bash asm`.
 
 ### Configuration
 
@@ -406,10 +404,9 @@ and `Ctrl-e` cancels completion or cycles an active snippet choice. `Ctrl-b/f`
 scrolls completion documentation. The `:`, `/`, and `?` command lines also offer
 completion; use `Tab`/`Shift-Tab` to navigate and `Ctrl-y` to accept.
 
-[render-markdown.nvim](https://github.com/MeanderingProgrammer/render-markdown.nvim)
-renders Markdown headings, lists, tables, and code blocks when opening Markdown
-files. Use `:RenderMarkdown toggle` to switch rendering on or off. Its in-process
-LSP supplies checkbox and callout completions through Blink.
+The `markdown` and `markdown_inline` Treesitter parsers provide Markdown syntax
+highlighting. The [Snacks image module](images.md) displays Markdown image references
+in supported terminals.
 [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) provides a global
 statusline with the current mode, Git branch/diff, diagnostics, filename, file
 details, and cursor position, using the active theme's colors.
@@ -486,7 +483,7 @@ nvim --headless '+luafile tests/test_compat.lua' +qa
 Installer tests use temporary HOME/XDG paths and do not replace your settings.
 The Neovim check covers plugin resolution, completion capabilities, and Rust
 shortcut behavior across multiple buffers, plus completion, snippets, Markdown
-rendering, and the statusline.
+parsing, and the statusline.
 
 ---
 
@@ -500,7 +497,7 @@ rendering, and the statusline.
 プラグインは [lazy.nvim](https://lazy.folke.io/) で管理します。
 
 Evergarden テーマ、FzfLua による検索、Blink の補完、LuaSnip のスニペット、
-Markdown のレンダリングを組み合わせています。Rust には rustaceanvim と rust-analyzer、
+Markdown の構文強調表示と、対応ターミナルでの画像プレビューを組み合わせています。Rust には rustaceanvim と rust-analyzer、
 Python には Pyright を使用します。
 
 ### 必要なもの
@@ -592,8 +589,8 @@ Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリン�
 - `:Lazy sync` でプラグインの導入・整理・更新とローカルのロックファイル生成を行います。
 - `:Lazy update` でプラグインとローカルのロックファイルを更新します。コミットは不要です。
 - `:checkhealth` でインストール済みのツールとプロバイダーを確認します。
-- Markdown の描画用に `markdown` と `markdown_inline` の Treesitter パーサーをインストールします。
-  それ以外のパーサーは、`:TSInstall rust python c cpp lua bash asm` などで明示的にインストールしてください。
+- Markdown の構文強調表示とインライン画像表示用に `markdown` と `markdown_inline` の
+  Treesitter パーサーをインストールします。それ以外は `:TSInstall rust python c cpp lua bash asm` などで明示的にインストールしてください。
 
 ### 設定の構成
 
@@ -624,9 +621,8 @@ tmux、Zellij、GitUI の個別設定は `dotfile/` にあり、Neovim のセッ
 `Ctrl-b/f` で補完のドキュメントをスクロールします。
 `:`, `/`, `?` のコマンドラインでも補完を利用でき、`Tab`/`Shift-Tab` で候補を移動し、`Ctrl-y` で確定します。
 
-[render-markdown.nvim](https://github.com/MeanderingProgrammer/render-markdown.nvim) は、Markdown ファイルを開くと、
-見出し、リスト、表、コードブロックを描画します。`:RenderMarkdown toggle` で描画を切り替えます。
-プロセス内で動作する LSP が、Blink 経由でチェックボックスとコールアウトの補完を提供します。
+`markdown` と `markdown_inline` Treesitter パーサーで Markdown の構文を強調表示します。
+[Snacks の画像モジュール](images.md)は、対応ターミナルで Markdown 内の画像を表示します。
 [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) は、現在のテーマの色を使った共通のステータスラインに、
 現在のモード、Git ブランチと差分、診断、ファイル名、ファイル情報、カーソル位置を表示します。
 
@@ -698,7 +694,7 @@ nvim --headless '+luafile tests/test_compat.lua' +qa
 
 インストーラーのテストは一時的な HOME/XDG パスを使用するため、既存の設定を置き換えません。
 Neovim のテストでは、プラグインの読み込み、補完機能、複数バッファーでの Rust ショートカットの動作に加え、
-補完、スニペット、Markdown の描画、ステータスラインを確認します。
+補完、スニペット、Markdown の構文解析、ステータスラインを確認します。
 
 ---
 

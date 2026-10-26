@@ -105,16 +105,6 @@ return require("lazy").setup({
 		lazy = false,
 		build = ":TSUpdate",
 	},
-	{
-		"MeanderingProgrammer/render-markdown.nvim",
-		ft = { "markdown" },
-		cmd = { "RenderMarkdown" },
-		dependencies = {
-			"nvim-treesitter/nvim-treesitter",
-			"nvim-tree/nvim-web-devicons",
-		},
-		opts = { completions = { lsp = { enabled = true } } },
-	},
 
 	-- util
 	"lewis6991/gitsigns.nvim",
