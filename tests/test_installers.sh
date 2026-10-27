@@ -35,7 +35,7 @@ done
 for os in linux macos; do
     grep -q 'Resolve latest stable Neovim' "$TEST_ROOT/$os-all.log" \
         || fail "$os all mode omitted tool provisioning"
-    grep -q 'Sync plugins without a local lockfile' "$TEST_ROOT/$os-all.log" \
+    grep -q 'Bootstrap Lazy and run Lazy! sync' "$TEST_ROOT/$os-all.log" \
         || fail "$os all mode omitted config/plugin work"
     grep -q 'Check Neovim >=0.12' "$TEST_ROOT/$os-tools.log" \
         || fail "$os tools mode omitted final tool checks"
@@ -46,7 +46,7 @@ for os in linux macos; do
         || fail "$os config mode omitted ordered tool checks"
     grep -q 'setup_init_file.sh' "$TEST_ROOT/$os-config.log" \
         || fail "$os config mode omitted setup step"
-    grep -q 'Sync plugins without a local lockfile' "$TEST_ROOT/$os-config.log" \
+    grep -q 'Bootstrap Lazy and run Lazy! sync' "$TEST_ROOT/$os-config.log" \
         || fail "$os config mode omitted plugin step"
     if grep -Eq 'apt-get|dnf install|pacman -S|brew install|Resolve latest stable Neovim|Install rustup' \
         "$TEST_ROOT/$os-config.log"; then
@@ -65,6 +65,8 @@ for os in linux macos; do
     env -u NVIM_APPNAME HOME="$TEST_ROOT/home" bash "$FIXTURE/script/install-$os.sh" --help \
         > "$TEST_ROOT/$os-help.log"
     grep -q 'all|tools|config|check' "$TEST_ROOT/$os-help.log" || fail "$os help omitted modes"
+    grep -q 'bootstraps Lazy, and syncs plugins' "$TEST_ROOT/$os-help.log" \
+        || fail "$os help omitted automatic Lazy sync"
 done
 
 expect_cli_error() {
@@ -153,15 +155,17 @@ check_last=$(grep -n '^check ' "$TEST_ROOT/nvim.log" | tail -n 1 | cut -d: -f1)
 operation_first=$(grep -n '^operation ' "$TEST_ROOT/nvim.log" | head -n 1 | cut -d: -f1)
 [[ $check_last -lt $operation_first ]] || fail 'configuration/plugin work began before checks completed'
 grep -q 'operation .*Lazy! sync' "$TEST_ROOT/nvim.log" || fail 'fresh install must sync without lock'
+if grep -q 'Lazy! restore' "$TEST_ROOT/nvim.log"; then fail 'installer must never restore based on a local lockfile'; fi
 grep -q 'operation .*tests/test_config.lua' "$TEST_ROOT/nvim.log" || fail 'startup check missing'
 grep -q 'operation .*tests/test_search.lua' "$TEST_ROOT/nvim.log" || fail 'search check missing'
 grep -q 'operation .*tests/test_compat.lua' "$TEST_ROOT/nvim.log" || fail 'compatibility check missing'
 
-# Backward compatibility maps --skip-tools to config mode; a local lock selects restore.
+# A local lockfile does not change the sync action, including through the legacy alias.
 printf '{}\n' > "$FIXTURE/nvim/lazy-lock.json"
 : > "$TEST_ROOT/nvim.log"
 run_installer '' --skip-tools > "$TEST_ROOT/reinstall.log"
-grep -q 'operation .*Lazy! restore' "$TEST_ROOT/nvim.log" || fail 'legacy alias/local lock must select restore'
+grep -q 'operation .*Lazy! sync' "$TEST_ROOT/nvim.log" || fail 'legacy alias/local lock must still sync'
+if grep -q 'Lazy! restore' "$TEST_ROOT/nvim.log"; then fail 'installer must never restore based on a local lockfile'; fi
 if grep -Eq 'apt-get|dnf install|pacman -S|brew install|Resolve latest stable Neovim' "$TEST_ROOT/reinstall.log"; then
     fail '--skip-tools alias attempted tool installation'
 fi

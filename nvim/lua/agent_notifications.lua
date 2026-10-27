@@ -5,28 +5,46 @@ local inbox
 local timer
 
 function M.receive(event)
-  if not M.enabled or type(event) ~= 'table' then return end
+  if not M.enabled or type(event) ~= 'table' then
+    return
+  end
   local function clean(value, fallback)
-    if type(value) ~= 'string' then return fallback end
+    if type(value) ~= 'string' then
+      return fallback
+    end
     return value:gsub('[%c]', ' '):sub(1, 500)
   end
   local agent = clean(event.agent, 'Agent')
   local project = vim.fn.fnamemodify(clean(event.cwd, ''), ':t')
   local session = clean(event.session_id, ''):sub(1, 12)
   local question = event.kind == 'question'
-  local title = agent .. (question and ' · 입력 필요' or '') .. (project ~= '' and ' · ' .. project or '')
+  local title = agent
+    .. (question and ' · 입력 필요' or '')
+    .. (project ~= '' and ' · ' .. project or '')
   local message = clean(event.message, '응답이 끝났습니다.')
-  if session ~= '' then message = message .. '\nSession: ' .. session end
-  vim.notify(message, question and vim.log.levels.WARN or vim.log.levels.INFO, { title = title, timeout = 10000 })
+  if session ~= '' then
+    message = message .. '\nSession: ' .. session
+  end
+  vim.notify(
+    message,
+    question and vim.log.levels.WARN or vim.log.levels.INFO,
+    { title = title, timeout = 10000 }
+  )
 end
 
 function M.poll()
-  if not inbox then return end
+  if not inbox then
+    return
+  end
   local scan = uv.fs_scandir(inbox)
-  if not scan then return end
+  if not scan then
+    return
+  end
   while true do
     local name, kind = uv.fs_scandir_next(scan)
-    if not name then break end
+    if not name then
+      break
+    end
     if kind == 'file' and name:match('%.json$') then
       local path = inbox .. '/' .. name
       local stat = uv.fs_stat(path)
@@ -34,7 +52,9 @@ function M.poll()
         local ok, event = pcall(function()
           return vim.json.decode(table.concat(vim.fn.readfile(path), '\n'))
         end)
-        if ok then M.receive(event) end
+        if ok then
+          M.receive(event)
+        end
       end
       uv.fs_unlink(path)
     end
@@ -51,11 +71,14 @@ function M.setup()
     vim.fn.mkdir(inbox, 'p', 448)
     timer = uv.new_timer()
     timer:start(500, 500, vim.schedule_wrap(M.poll))
-    vim.api.nvim_create_autocmd('VimLeavePre', { group = group, callback = function()
-      timer:stop()
-      timer:close()
-      vim.fn.delete(inbox, 'rf')
-    end })
+    vim.api.nvim_create_autocmd('VimLeavePre', {
+      group = group,
+      callback = function()
+        timer:stop()
+        timer:close()
+        vim.fn.delete(inbox, 'rf')
+      end,
+    })
   end
   vim.api.nvim_create_user_command('AgentNotifications', function(opts)
     if opts.args == 'test' then
@@ -64,12 +87,23 @@ function M.setup()
       M.enabled = opts.args == 'on'
       vim.notify('Agent notifications: ' .. opts.args)
     else
-      vim.notify('Agent notifications: ' .. (M.enabled and 'on' or 'off') .. '\nInbox: ' .. (inbox or 'headless (disabled)'))
+      vim.notify(
+        'Agent notifications: '
+          .. (M.enabled and 'on' or 'off')
+          .. '\nInbox: '
+          .. (inbox or 'headless (disabled)')
+      )
     end
-  end, { nargs = '?', complete = function() return { 'on', 'off', 'test', 'status' } end })
+  end, {
+    nargs = '?',
+    complete = function()
+      return { 'on', 'off', 'test', 'status' }
+    end,
+  })
   vim.keymap.set('n', '<leader>nh', '<cmd>Notifications<cr>', { desc = 'Notification history' })
-  vim.keymap.set('n', '<leader>nd', function() require('notify').dismiss({ silent = true, pending = true }) end,
-    { desc = 'Dismiss notifications' })
+  vim.keymap.set('n', '<leader>nd', function()
+    require('notify').dismiss({ silent = true, pending = true })
+  end, { desc = 'Dismiss notifications' })
 end
 
 return M

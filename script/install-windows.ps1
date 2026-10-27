@@ -3,10 +3,11 @@
 Installs Windows tools, installs the Neovim configuration, or checks prerequisites.
 .DESCRIPTION
 Native Windows x64. The default All mode installs tools and the configuration.
-Config uses existing tools without installing them; Tools installs prerequisites;
-Check performs read-only prerequisite checks. Existing configuration is moved to
-a timestamped backup. The copied configuration does not require symlink
-privileges or this checkout to remain in place. Rerun after updating the repo.
+Config uses existing tools without installing them, bootstraps Lazy, and runs
+Lazy! sync; Tools installs prerequisites; Check performs read-only prerequisite
+checks. Existing configuration is moved to a timestamped backup. The copied
+configuration does not require symlink privileges or this checkout to remain in
+place. Rerun after updating the repo.
 .PARAMETER Mode
 All (default), Tools, Config, or Check.
 .PARAMETER InstallTools
@@ -282,14 +283,13 @@ function Invoke-InstallConfig([switch]$PrerequisitesChecked) {
         }
         Write-Host "Copied configuration to $config"
     }
-    if (Invoke-InstallerShouldProcess 'Neovim plugins and Markdown parsers' 'Install or restore and verify') {
+    if (Invoke-InstallerShouldProcess 'Neovim plugins and Markdown parsers' 'Bootstrap Lazy, run Lazy! sync, and verify') {
         # Run from the checkout so Lua test paths remain portable even with spaces.
         Push-Location -LiteralPath $project
         try {
             # Bootstrap Lazy without loading UI modules that need uninstalled plugins.
             $bootstrap = "lua vim.go.loadplugins = true; vim.opt.rtp:prepend(vim.fn.stdpath('config')); require('plugins')"
-            $pluginAction = if (Test-Path -LiteralPath (Join-Path $config 'lazy-lock.json') -PathType Leaf) { 'restore' } else { 'sync' }
-            Invoke-Nvim @('--headless', '-u', 'NONE', ('+' + $bootstrap), ('+Lazy! ' + $pluginAction), "+lua if vim.v.errmsg ~= '' then vim.cmd('cquit 1') end", '+qa!')
+            Invoke-Nvim @('--headless', '-u', 'NONE', ('+' + $bootstrap), '+Lazy! sync', "+lua if vim.v.errmsg ~= '' then vim.cmd('cquit 1') end", '+qa!')
             Invoke-Nvim @('--headless', "+lua require('nvim-treesitter').install({'markdown', 'markdown_inline'}):wait(300000)", '+qa!')
             Invoke-Nvim @('--headless', '+luafile tests/test_config.lua', '+qa!')
             Invoke-Nvim @('--headless', '+luafile tests/test_search.lua', '+qa!')
@@ -311,7 +311,7 @@ function Show-WhatIfPlan {
         [void](Invoke-InstallerShouldProcess 'LLVM-MinGW UCRT' 'Initialize compiler environment for parser builds')
         [void](Invoke-InstallerShouldProcess 'Windows prerequisites' 'Run read-only tool checks')
         [void](Invoke-InstallerShouldProcess 'Neovim config and data' 'Back up legacy data/config and copy repository configuration')
-        [void](Invoke-InstallerShouldProcess 'Neovim plugins and Markdown parsers' 'Install or restore and verify')
+        [void](Invoke-InstallerShouldProcess 'Neovim plugins and Markdown parsers' 'Bootstrap Lazy, run Lazy! sync, and verify')
     }
     if ($Mode -eq 'Check') { Write-Host 'Check mode is read-only; no environment variables or files are changed.' }
 }

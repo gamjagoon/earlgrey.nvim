@@ -56,6 +56,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 작업은 Unix의 `--mode`, Windows의 `-Mode`로 선택합니다: `all` · `tools` · `config` · `check`. [모드 안내](docs/guide.md#installer-modes)
 
 기존 Neovim 설정은 설치 전에 날짜가 붙은 백업으로 보존합니다. Linux/macOS는 설정을 연결하고, Windows는 복사합니다.
+플러그인은 모든 운영체제에서 lazy.nvim을 준비한 뒤 설치기가 `Lazy! sync`를 자동 실행해 설치·갱신합니다.
 
 ## 설치 후 시작
 
@@ -75,6 +76,7 @@ Leader 키는 `Space`입니다.
 | `Shift-h/l` | 이전·다음 버퍼 |
 | `Space 1` … `Space 9` | 번호로 버퍼 선택 |
 | `Space e` | 파일 트리 열기·닫기 |
+| `Space hx` | 일반 보기·hex 보기 전환 (`xxd` 필요) |
 | `Space ff` | 파일 찾기 |
 | `Space fg` | 파일 내용 검색 |
 | `Space /` | 현재 버퍼 검색 |

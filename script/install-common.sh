@@ -12,7 +12,7 @@ export PATH="$HOME/.local/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 
 install_usage() {
     printf 'Usage: bash %s [--mode all|tools|config|check] [--dry-run] [--help]\n' "${0##*/}"
-    printf '%s\n' 'Modes: all installs tools and configuration; tools installs prerequisites; config links configuration and installs/restores plugins; check validates tools only.'
+    printf '%s\n' 'Modes: all installs tools and configuration; tools installs prerequisites; config links configuration, bootstraps Lazy, and syncs plugins; check validates tools only.'
     printf '%s\n' '--mode defaults to all. --mode can also be written as --mode=VALUE.'
     printf '%s\n' '--dry-run prints the selected operations without changing files or using the network.'
     printf '%s\n' '--skip-tools is a compatibility alias for --mode config.'
@@ -359,16 +359,14 @@ install_config_and_plugins() {
     install_run bash "$INSTALL_SCRIPT_DIR/setup_init_file.sh"
     # Keep tests in separate processes: each starts from a fresh editor state.
     if "$INSTALL_DRY_RUN"; then
-        printf '%s\n' 'Sync plugins without a local lockfile, otherwise restore local locked versions; await Markdown parsers and run startup/search/compatibility tests.'
+        printf '%s\n' 'Bootstrap Lazy and run Lazy! sync, then await Markdown parsers and run startup/search/compatibility tests.'
         return
     fi
     (
         cd "$INSTALL_REPO_ROOT"
-        local plugin_action=sync
-        if [[ -f "$INSTALL_REPO_ROOT/nvim/lazy-lock.json" ]]; then plugin_action=restore; fi
-        printf 'Plugin setup: Lazy %s (local lockfile selects restore).\n' "$plugin_action"
         # Load only the plugin declarations until missing plugins have been installed.
-        nvim --headless -u NONE "+lua vim.go.loadplugins = true; vim.opt.rtp:prepend(vim.fn.stdpath('config')); require('plugins')" "+Lazy! $plugin_action" '+lua if vim.v.errmsg ~= "" then vim.cmd("cquit 1") end' '+qa!'
+        printf '%s\n' 'Plugin setup: Lazy sync.'
+        nvim --headless -u NONE "+lua vim.go.loadplugins = true; vim.opt.rtp:prepend(vim.fn.stdpath('config')); require('plugins')" '+Lazy! sync' '+lua if vim.v.errmsg ~= "" then vim.cmd("cquit 1") end' '+qa!'
         nvim --headless '+lua require("nvim-treesitter").install({"markdown", "markdown_inline"}):wait(300000)' '+qa!'
         nvim --headless '+luafile tests/test_config.lua' '+qa!'
         nvim --headless '+luafile tests/test_search.lua' '+qa!'

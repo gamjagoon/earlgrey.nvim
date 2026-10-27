@@ -35,6 +35,29 @@ Snacks 상태 검사는 비활성 모듈도 확인합니다. 이 설정에서 Sn
 결과입니다. `gs`, `tectonic`/`pdflatex`, `mmdc` 누락은 각각 PDF, LaTeX 수식,
 Mermaid 변환 기능에만 관련됩니다. 필요한 기능을 쓸 때만 도구를 설치하세요.
 
+## WSL2 Ubuntu 24.04에서 Ghostty 사용
+
+Ubuntu 셸에서 `ghostty`를 실행해 WSLg Ghostty 창을 열고, 그 창의 셸에서
+`nvim path/to/image.png` 또는 `nvim path/to/note.md`처럼 Neovim을 실행하세요.
+Markdown 이미지 참조도 필요한 Treesitter 파서가 있으면 표시할 수 있습니다.
+`:checkhealth snacks`로 이미지 모듈과 Kitty Graphics Protocol 감지를 확인하세요.
+
+Markdown 제목, 표, 체크박스 같은 요소는 `render-markdown.nvim`이 표시하고,
+이미지 데이터는 Snacks 이미지 모듈이 그립니다. Markdown 파일에서
+`:RenderMarkdown toggle`로 표시를 켜고 끄거나, `:RenderMarkdown buf_toggle`로
+현재 버퍼에만 적용할 수 있습니다. 제목, 표, 체크리스트, 이미지를 함께 시험하려면
+[미리보기 데모](image-preview-demo.md)를 여세요.
+
+PNG 이외의 형식 변환이 필요하고 `magick`과 `convert`가 모두 없을 때만
+ImageMagick을 설치하세요.
+
+```sh
+if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
+  sudo apt update
+  sudo apt install imagemagick
+fi
+```
+
 ## English
 
 This config enables only the [snacks.nvim image module](https://github.com/folke/snacks.nvim/blob/main/docs/image.md). In a terminal UI, open an image

@@ -94,7 +94,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
-Linux/macOS는 도구 설치 → 설정 백업/연결 → 플러그인 복원 → 파서 설치 →
+Linux/macOS는 도구 설치 → 설정 백업/연결 → lazy.nvim 준비 및 `Lazy sync` → 파서 설치 →
 시작·검색 검사를 수행합니다. 세 OS 모두 기본 모드는 전체 설치인 `all`입니다. Windows도 WinGet 도구 설치를 함께 수행합니다.
 Windows는 LLVM-MinGW UCRT와 Rust `windows-gnullvm`을 사용하며 Visual Studio Build Tools를 설치하지 않습니다.
 Windows 점검만 실행하려면 `install-windows.ps1 -Mode Check`을 사용하세요.
@@ -102,8 +102,10 @@ Unix는 `--mode tools`로 도구만, `--mode config`로 기존 도구를 사용�
 `--mode check`는 도구 검사만 실행합니다. Windows에서는 각각 `-Mode Tools`, `-Mode Config`, `-Mode Check`를 지정합니다.
 Neovim·tree-sitter는 실행 시 공식 최신 안정 릴리스를 조회하며, 설치된 버전이
 이보다 오래되면 갱신합니다. 다른 도구는 패키지 관리자가 제공하는 최신 버전을 사용합니다.
-최소 버전 검사는 유지합니다. 로컬 `lazy-lock.json`이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을 설치하고, 있으면 해당 버전으로 복원합니다.
-lockfile은 로컬에서 생성하며 Git 추적에서 제외합니다.
+최소 버전 검사는 유지합니다. 플러그인 설치는 모든 플랫폼에서 lazy.nvim 준비 후
+설치기가 `Lazy! sync`를 자동 실행하는 방식으로 통일합니다. 개별 플러그인 다운로드는
+lazy.nvim이 담당합니다. 로컬 `lazy-lock.json` 유무에 관계없이 같은 명령을 실행하며,
+sync는 플러그인과 lockfile을 갱신할 수 있습니다. lockfile은 Git 추적에서 제외합니다.
 실제 변경 없이 명령을 확인하려면 Unix는 `--dry-run`, Windows는 `-WhatIf`를 사용합니다.
 
 <a id="installer-modes"></a>
@@ -147,7 +149,7 @@ Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`�
 ### 플러그인 관리
 
 - `:Lazy`: 플러그인 관리자 열기
-- `:Lazy restore`: 로컬 lockfile에 기록된 플러그인 버전 복구
+- `:Lazy restore`: 필요할 때 수동으로 로컬 lockfile에 기록된 버전 복구
 - `:Lazy sync`: 플러그인 설치·정리·갱신 및 로컬 lockfile 생성
 - `:Lazy update`: 플러그인과 로컬 lockfile 갱신. lockfile은 커밋하지 않습니다.
 - `:checkhealth`: 설치된 도구와 제공자 점검
@@ -167,7 +169,13 @@ Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`�
 | `snippets.lua` | LuaSnip과 `date` 스니펫 |
 | `lsp.lua` | LSP 전환 명령, 기능 협상, 진단, 버퍼별 단축키 |
 | `lsp_languages.lua` | 언어별 LSP 시작 기본값 (`enabled`) |
-| `basic.lua` | 편집기 옵션, 이동, 클립보드, 검색 단축키 |
+| `basic.lua` | 옵션·키맵·검색 모듈을 순서대로 연결 |
+| `options.lua` | 편집기 옵션과 파일 형식별 동작 (`gf` 상대 경로 포함) |
+| `keymaps.lua` | 이동, 클립보드, 버퍼 선택, hex 전환 단축키 |
+| `search.lua` | FzfLua 설정과 현재 작업 디렉터리 기준 검색 |
+
+Lua 설정의 포맷은 저장소 루트의 `.stylua.toml`로 통일합니다. StyLua가 설치된
+환경에서 `stylua nvim`으로 정리하고 `stylua --check nvim`으로 확인할 수 있습니다.
 
 주요 플러그인은 검색용 FzfLua, 자동 완성용 blink.cmp·LuaSnip, 파일 탐색용
 nvim-tree, Git 변경 표시용 Gitsigns, Rust 개발용 rustaceanvim입니다. 디버깅은
@@ -206,6 +214,7 @@ Leader는 **Space**, local leader는 `\`입니다.
 | `Shift-h/l` | 이전·다음 버퍼 |
 | `Space 1` … `Space 9` | 번호로 버퍼 선택 |
 | `Space e` | 파일 트리 열기·닫기 |
+| `Space hx` | 일반 보기·hex 보기 전환 (`xxd` 필요) |
 | `Space ff` | fd로 파일을 찾고 fzf로 퍼지 선택 |
 | `Space fg` | rg·fzf로 내용 실시간 검색 |
 | `Space fs` | 커서 단어를 완전 일치 단어로 검색하고 결과를 퍼지 필터링 |
@@ -251,7 +260,7 @@ powershell -NoProfile -File tests/test_windows_compiler.ps1
 bash tests/test_install.sh
 bash tests/test_installers.sh
 bash tests/test_releases.sh
-# After setup and plugin restore, using Neovim 0.12 or newer:
+# After setup and automatic Lazy sync, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
 nvim --headless '+luafile tests/test_compat.lua' +qa
@@ -335,7 +344,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
-Linux/macOS installers install tools, back up/link configuration, restore plugins,
+Linux/macOS installers install tools, back up/link configuration, bootstrap lazy.nvim and run `Lazy sync`,
 install parsers, and run startup/search checks. All platforms default to full installation (`all`), including WinGet prerequisites on Windows.
 Windows uses LLVM-MinGW UCRT and Rust `windows-gnullvm`, without Visual Studio Build Tools.
 Use `install-windows.ps1 -Mode Check` to inspect Windows prerequisites only.
@@ -343,10 +352,11 @@ On Unix, use `--mode tools` for tools alone, `--mode config` for configuration/p
 and `--mode check` for read-only prerequisite checks. Windows accepts `-Mode Tools`, `-Mode Config`, and `-Mode Check`.
 Neovim and tree-sitter resolve the latest official stable release at runtime and
 upgrade older installations. Other tools use the latest versions offered by their
-package managers. Minimum compatibility checks remain. Without a local `lazy-lock.json`,
-`Lazy sync` installs the latest versions allowed by plugin specifications; an existing
-lockfile restores its recorded versions. The generated lockfile is local and Git-ignored. Preview commands without
-changes with `--dry-run` on Unix or `-WhatIf` on Windows.
+package managers. Minimum compatibility checks remain. Every installer bootstraps
+lazy.nvim and automatically runs `Lazy! sync`; lazy.nvim manages individual plugin
+downloads. The same command runs with or without a local `lazy-lock.json`, and may
+update plugins and the lockfile. The lockfile is local and Git-ignored. Preview
+commands without changes with `--dry-run` on Unix or `-WhatIf` on Windows.
 
 On all three platforms Lazy downloads every declared plugin and dependency locally; existing platform binaries are not copied.
 
@@ -365,7 +375,7 @@ automatically. Select a Nerd Font in your terminal separately for icon display.
 ### Plugin maintenance
 
 - `:Lazy` opens the plugin manager.
-- `:Lazy restore` restores plugin versions recorded in your local lockfile.
+- `:Lazy restore` manually restores plugin versions from the local lockfile when needed.
 - `:Lazy sync` installs, cleans, and updates plugins and generates a local lockfile.
 - `:Lazy update` updates plugins and the local lockfile. Do not commit the lockfile.
 - `:checkhealth` checks installed tools and providers.
@@ -385,7 +395,10 @@ automatically. Select a Nerd Font in your terminal separately for icon display.
 | `snippets.lua` | LuaSnip and the `date` snippet |
 | `lsp.lua` | LSP switching commands, capabilities, diagnostics, buffer shortcuts |
 | `lsp_languages.lua` | Per-language LSP startup defaults (`enabled`) |
-| `basic.lua` | Editor options, navigation, clipboard and search shortcuts |
+| `basic.lua` | Loads options, keymaps, and search in order |
+| `options.lua` | Editor options and filetype behavior, including relative `gf` paths |
+| `keymaps.lua` | Navigation, clipboard, buffer selection, and hex toggle shortcuts |
+| `search.lua` | FzfLua configuration and searches in the current working directory |
 
 The main plugins are FzfLua for search, blink.cmp and LuaSnip for
 completion, nvim-tree for files, Gitsigns for Git changes, and rustaceanvim for
@@ -429,6 +442,7 @@ Leader is **Space**; local leader is `\`.
 | `Shift-h/l` | Previous/next buffer |
 | `Space 1` … `Space 9` | Select a numbered buffer |
 | `Space e` | Toggle the file tree |
+| `Space hx` | Toggle normal/hex view (requires `xxd`) |
 | `Space ff` | Find files with fd and fuzzy-select with fzf |
 | `Space fg` | Live content search with rg and fzf |
 | `Space fs` | Search the whole word under the cursor with rg; fuzzy-filter results |
@@ -474,7 +488,7 @@ powershell -NoProfile -File tests/test_windows_compiler.ps1
 bash tests/test_install.sh
 bash tests/test_installers.sh
 bash tests/test_releases.sh
-# After setup and plugin restore, using Neovim 0.12 or newer:
+# After setup and automatic Lazy sync, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
 nvim --headless '+luafile tests/test_compat.lua' +qa
@@ -554,7 +568,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -Mode Tools
 ```
 
-Linux/macOS はツール導入、設定のバックアップとリンク、プラグイン復元、
+Linux/macOS はツール導入、設定のバックアップとリンク、lazy.nvim の準備と `Lazy sync`、
 パーサー導入、起動・検索テストを実行します。すべての OS で既定は全体導入の `all` です。
 Windows でも WinGet によるツール導入を行います。
 Windows は LLVM-MinGW UCRT と Rust `windows-gnullvm` を使用し、Visual Studio Build Tools を導入しません。
@@ -563,9 +577,10 @@ Unix は `--mode tools` でツールのみ、`--mode config` で既存ツール�
 `--mode check` で確認のみを実行します。Windows は `-Mode Tools`、`-Mode Config`、`-Mode Check` を指定します。
 Neovim と tree-sitter は実行時に公式の最新安定リリースを取得し、古い導入を更新します。
 その他のツールはパッケージマネージャーが提供する最新版を使用します。
-最低バージョンの確認は維持します。ローカルの `lazy-lock.json` がなければ
-`Lazy sync` でプラグイン設定が許可する最新版を導入し、あれば記録されたバージョンを復元します。
-生成されるロックファイルはローカル専用で、Git の追跡対象外です。
+最低バージョンの確認は維持します。すべてのインストーラーは lazy.nvim を準備し、
+`Lazy! sync` を自動実行します。各プラグインのダウンロードは lazy.nvim が担当します。
+ローカルの `lazy-lock.json` の有無にかかわらず同じコマンドを実行し、
+プラグインとロックファイルが更新される場合があります。ロックファイルは Git の追跡対象外です。
 変更せずに確認するには Unix は `--dry-run`、Windows は `-WhatIf` を指定します。
 
 3つのプラットフォームとも Lazy が宣言されたプラグインと依存をダウンロードします。別環境のバイナリーはコピーしません。
@@ -585,7 +600,7 @@ Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリン�
 ### プラグインの管理
 
 - `:Lazy` でプラグインマネージャーを開きます。
-- `:Lazy restore` でローカルのロックファイルに記録されたバージョンを復元します。
+- 必要なときだけ `:Lazy restore` でローカルのロックファイルに記録されたバージョンを手動復元できます。
 - `:Lazy sync` でプラグインの導入・整理・更新とローカルのロックファイル生成を行います。
 - `:Lazy update` でプラグインとローカルのロックファイルを更新します。コミットは不要です。
 - `:checkhealth` でインストール済みのツールとプロバイダーを確認します。
@@ -604,7 +619,10 @@ Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリン�
 | `snippets.lua` | LuaSnip と `date` スニペット |
 | `lsp.lua` | LSP 切り替え、機能設定、診断、バッファーごとのショートカット |
 | `lsp_languages.lua` | 言語別 LSP の起動時設定 (`enabled`) |
-| `basic.lua` | エディターのオプション、移動、クリップボードと検索のショートカット |
+| `basic.lua` | オプション、キーマップ、検索モジュールを順に読み込み |
+| `options.lua` | エディターのオプションとファイル形式別の動作（`gf` の相対パスを含む） |
+| `keymaps.lua` | 移動、クリップボード、バッファー選択、hex 切り替え |
+| `search.lua` | FzfLua 設定と現在の作業ディレクトリ内の検索 |
 
 主なプラグインは、検索用の FzfLua、補完用の blink.cmp と LuaSnip、ファイル操作用の nvim-tree、
 Git の変更表示用の Gitsigns、Rust 用の rustaceanvim です。
@@ -643,6 +661,7 @@ Leader は **Space**、local leader は `\` です。
 | `Shift-h/l` | 前／次のバッファーへ移動 |
 | `Space 1` … `Space 9` | 番号でバッファーを選択 |
 | `Space e` | ファイルツリーの表示を切り替え |
+| `Space hx` | 通常表示と hex 表示を切り替え（`xxd` が必要） |
 | `Space ff` | fd でファイルを検索し、fzf であいまい検索して選択 |
 | `Space fg` | rg と fzf で内容をリアルタイム検索 |
 | `Space fs` | カーソル位置の単語を rg で単語全体として検索し、結果をあいまい検索で絞り込む |
@@ -686,7 +705,7 @@ powershell -NoProfile -File tests/test_windows_compiler.ps1
 bash tests/test_install.sh
 bash tests/test_installers.sh
 bash tests/test_releases.sh
-# After setup and plugin restore, using Neovim 0.12 or newer:
+# After setup and automatic Lazy sync, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
 nvim --headless '+luafile tests/test_compat.lua' +qa

@@ -163,6 +163,8 @@ function Initialize-WindowsCompiler {
     if (-not (Test-Path -LiteralPath (Join-Path $env:XDG_CONFIG_HOME 'nvim/init.lua'))) { throw 'All mode did not install the configuration' }
     if (-not ($global:WingetTestCalls -match '^winget install .*Neovim.Neovim')) { throw 'All mode did not install tools' }
     if (-not ($global:WingetTestCalls -match '^nvim .*test_config.lua')) { throw 'All mode did not verify the copied configuration' }
+    if (-not ($global:WingetTestCalls -match '^nvim .*\+Lazy! sync')) { throw 'All mode did not sync Lazy plugins' }
+    if ($global:WingetTestCalls -match '^nvim .*\+Lazy! restore') { throw 'All mode must not restore based on a lockfile' }
     Write-Output 'PASS: winget arguments, WhatIf, Rust/Pyright setup, LLVM-MinGW/gnullvm selection, no-upgrade code, and failure propagation (mocked)'
 } finally {
     foreach ($name in $savedEnv.Keys) { [Environment]::SetEnvironmentVariable($name, $savedEnv[$name], 'Process') }

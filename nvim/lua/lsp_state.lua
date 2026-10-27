@@ -31,10 +31,16 @@ function M.is_generation_current(server, generation)
 end
 
 function M.can_start_rust(bufnr)
-  if not M.is_enabled('rust-analyzer') then return false end
-  if not vim.api.nvim_buf_is_valid(bufnr) or vim.bo[bufnr].buftype ~= '' then return false end
+  if not M.is_enabled('rust-analyzer') then
+    return false
+  end
+  if not vim.api.nvim_buf_is_valid(bufnr) or vim.bo[bufnr].buftype ~= '' then
+    return false
+  end
   local path = vim.api.nvim_buf_get_name(bufnr)
-  if not require('rustaceanvim.os').is_valid_file_path(path) then return false end
+  if not require('rustaceanvim.os').is_valid_file_path(path) then
+    return false
+  end
   return vim.fn.executable('rust-analyzer') == 1
 end
 

@@ -117,8 +117,10 @@ Windows는 기존 설정을 타임스탬프 폴더에 백업하고 저장소 `nv
 `stdpath('data')/lazy`에 다운로드합니다. 다른 운영체제의 플러그인 캐시나 바이너리를 복사하지 않습니다.
 Linux/macOS는 설정을 복사하는 대신 저장소 `nvim/`에 심볼릭 링크를 만듭니다. 세 플랫폼 모두 같은 플러그인 선언을 설치합니다.
 
-로컬 `lazy-lock.json`이 없으면 `Lazy sync`, 있으면 `Lazy restore`를 실행합니다.
-재설치 시 기존 Windows 설치의 lockfile은 보존합니다. lockfile은 Git 추적에서 제외됩니다.
+설치기는 lazy.nvim을 준비한 다음 항상 `Lazy! sync`를 자동 실행합니다. 개별 플러그인은
+lazy.nvim이 설치·정리·갱신하며, lockfile 유무에 따라 설치 명령을 바꾸지 않습니다.
+재설치 시 저장소에 lockfile이 없으면 기존 Windows 설치의 lockfile을 먼저 넘겨받지만,
+sync 과정에서 갱신될 수 있습니다. lockfile은 Git 추적에서 제외됩니다.
 지연 로딩 플러그인도 설치하지만 필요한 파일/명령을 사용할 때 로딩됩니다.
 언어 파서는 플러그인과 별개이며 현재 자동 설치 대상은 Markdown과 Markdown inline입니다.
 인터넷 연결이 필요하며, 전체 플러그인을 저장소에 묶어 제공하는 오프라인 설치기는 아닙니다.

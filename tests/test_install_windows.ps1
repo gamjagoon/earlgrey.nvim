@@ -9,6 +9,7 @@ foreach ($name in @('OS', 'LOCALAPPDATA', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'N
     $savedEnv[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
 }
 $global:NvimInstallTestCalls = New-Object 'System.Collections.Generic.List[string]'
+$global:NvimLockSeenAtSync = New-Object 'System.Collections.Generic.List[string]'
 $global:NvimInstallTestFailure = ''
 $global:NvimToolTestCalls = 0
 $global:NvimRustTestFailure = $false
@@ -23,6 +24,12 @@ function global:nvim.exe {
         return
     }
     [void]$global:NvimInstallTestCalls.Add(($args -join ' '))
+    if (($args -join ' ') -match '\+Lazy! sync') {
+        $lockPath = Join-Path $env:XDG_CONFIG_HOME 'nvim/lazy-lock.json'
+        if (Test-Path -LiteralPath $lockPath -PathType Leaf) {
+            [void]$global:NvimLockSeenAtSync.Add('present:' + [IO.File]::ReadAllText($lockPath))
+        } else { [void]$global:NvimLockSeenAtSync.Add('absent') }
+    }
     $global:LASTEXITCODE = 0
     if ($global:NvimInstallTestFailure -and ($args -join ' ').Contains($global:NvimInstallTestFailure)) {
         $global:LASTEXITCODE = 17
@@ -74,6 +81,11 @@ try {
     & $installer -WhatIf
     foreach ($mode in @('All', 'Tools', 'Config', 'Check')) { & $installer -Mode $mode -WhatIf }
     & $installer -InstallTools -WhatIf
+    $installerHelp = Get-Help $installer -Detailed | Out-String
+    if (-not $installerHelp.Contains('Lazy! sync')) { throw 'Windows help omitted the automatic Lazy sync' }
+    $installerSource = Get-Content -LiteralPath $installer -Raw
+    if (-not $installerSource.Contains("'Bootstrap Lazy, run Lazy! sync, and verify'")) { throw 'Config WhatIf plan omitted the automatic Lazy sync' }
+    if ($installerSource.Contains('Install or restore')) { throw 'Config WhatIf plan still describes a restore branch' }
     if (Test-Path -LiteralPath $root) { throw 'WhatIf changed the filesystem' }
     if ($global:NvimToolTestCalls -ne 0) { throw 'WhatIf executed a tool' }
     if ($env:PATH -ne $savedEnv['PATH']) { throw 'WhatIf changed PATH' }
@@ -131,6 +143,8 @@ try {
     }
     if ($global:NvimInstallTestCalls.Count -ne 5) { throw 'Missing plugins/parser/startup/search/compatibility invocations' }
     if (-not ($global:NvimInstallTestCalls -match '\+Lazy! sync')) { throw 'Fresh configuration did not sync plugins' }
+    if ($global:NvimInstallTestCalls -match '\+Lazy! restore') { throw 'Installer must never restore based on a local lockfile' }
+    if ($global:NvimLockSeenAtSync.Count -ne 1 -or $global:NvimLockSeenAtSync[0] -ne 'absent') { throw 'Fresh configuration lock state at sync was unexpected' }
     if (-not ($global:NvimInstallTestCalls -match '-u NONE')) { throw 'Plugin bootstrap loaded full init' }
     if (-not ($global:NvimInstallTestCalls -match 'vim.go.loadplugins = true')) { throw 'Bootstrap disabled Lazy loading' }
     if (-not ($global:NvimInstallTestCalls -match 'cquit 1')) { throw 'Bootstrap errors must fail installation' }
@@ -138,9 +152,24 @@ try {
     $localLock = '{"local-plugin":{"commit":"local-revision"}}'
     [IO.File]::WriteAllText((Join-Path $config 'lazy-lock.json'), $localLock)
     $global:NvimInstallTestCalls.Clear()
+    $global:NvimLockSeenAtSync.Clear()
     & $installer -Mode Config
-    if (-not ($global:NvimInstallTestCalls -match '\+Lazy! restore')) { throw 'Existing local lock was not restored' }
-    if ([IO.File]::ReadAllText((Join-Path $config 'lazy-lock.json')) -ne $localLock) { throw 'Local lock was lost during reinstall' }
+    if (-not ($global:NvimInstallTestCalls -match '\+Lazy! sync')) { throw 'Existing local lock did not sync' }
+    if ($global:NvimInstallTestCalls -match '\+Lazy! restore') { throw 'Installer must never restore based on a local lockfile' }
+    if ($global:NvimLockSeenAtSync.Count -ne 1 -or $global:NvimLockSeenAtSync[0] -ne ('present:' + $localLock)) { throw 'Prior local lock was not carried forward before sync' }
+    # This mock does not execute Lazy, so the prior lock should remain byte-for-byte unchanged.
+    if ([IO.File]::ReadAllText((Join-Path $config 'lazy-lock.json')) -ne $localLock) { throw 'Mocked sync unexpectedly changed the carried lock' }
+
+    $sourceLock = '{"source-plugin":{"commit":"source-revision"}}'
+    [IO.File]::WriteAllText((Join-Path $fixtureProject 'nvim/lazy-lock.json'), $sourceLock)
+    $global:NvimInstallTestCalls.Clear()
+    $global:NvimLockSeenAtSync.Clear()
+    & $installer -Mode Config
+    if (-not ($global:NvimInstallTestCalls -match '\+Lazy! sync') -or $global:NvimInstallTestCalls -match '\+Lazy! restore') { throw 'Source lock configuration did not use Lazy sync' }
+    if ($global:NvimLockSeenAtSync.Count -ne 1 -or $global:NvimLockSeenAtSync[0] -ne ('present:' + $sourceLock)) { throw 'Copied source lock did not take precedence before sync' }
+    # This mock does not execute Lazy, so source lock bytes remain unchanged here.
+    if ([IO.File]::ReadAllText((Join-Path $config 'lazy-lock.json')) -ne $sourceLock) { throw 'Mocked sync unexpectedly changed the source lock' }
+    Remove-Item -LiteralPath (Join-Path $fixtureProject 'nvim/lazy-lock.json')
     $global:NvimInstallTestCalls.Clear()
     $global:NvimInstallTestFailure = 'test_config.lua'
     $rejected = $false
@@ -171,7 +200,7 @@ try {
         'git.exe', 'curl.exe', 'fd.exe', 'rg.exe', 'cargo.exe', 'rustc.exe', 'rustup.exe', 'node.exe', 'npm.cmd')) {
         Remove-Item -LiteralPath ('Function:\' + $name) -ErrorAction SilentlyContinue
     }
-    Remove-Variable NvimInstallTestCalls, NvimInstallTestFailure, NvimToolTestCalls, NvimRustTestFailure, NvimVersionTestOld, NvimCompilerInitCalls, NvimCompilerCheckCalls -Scope Global -ErrorAction SilentlyContinue
+    Remove-Variable NvimInstallTestCalls, NvimLockSeenAtSync, NvimInstallTestFailure, NvimToolTestCalls, NvimRustTestFailure, NvimVersionTestOld, NvimCompilerInitCalls, NvimCompilerCheckCalls -Scope Global -ErrorAction SilentlyContinue
     if (Test-Path -LiteralPath $fixtureRoot) { Remove-Item $fixtureRoot -Recurse -Force }
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
 }
