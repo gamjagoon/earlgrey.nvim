@@ -458,15 +458,8 @@ Leader is **Space**; local leader is `\`.
 
 Rust shortcuts are buffer-local and installed when an LSP attaches to a Rust
 buffer. Normal/visual `y`, `p`, `Y`, and `P` use the system clipboard.
-On WSL, the config selects `win32yank.exe` when it is on `PATH` and its harmless
-help command runs successfully; this routes clipboard operations through the
-Windows clipboard. Install the [official x64 release](https://github.com/equalsraf/win32yank/releases)
-in a directory on `PATH` if needed. Other systems keep Neovim's built-in provider
-selection.
-
-WSL에서 `wl-copy` 오류가 나면 공식 릴리스의 `win32yank.exe`를 `PATH`에 두고 Neovim을
-다시 시작하세요. 실행 가능한 경우 Windows 클립보드를 사용하고, Windows 연동을 확인할 수 없으면
-Neovim의 기본 프로바이더 선택을 유지합니다.
+On Wayland, Neovim uses `wl-copy` and `wl-paste` when `WAYLAND_DISPLAY` is set and
+both commands are available.
 
 Searches use Neovim's current working directory (`:pwd`); use `:cd /path/to/project`
 to select a project. File search uses fd, content search uses rg, and both respect
