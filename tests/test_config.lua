@@ -11,6 +11,7 @@ end
 
 local function check()
   assert(vim.v.errmsg == '', 'startup error: ' .. vim.v.errmsg)
+  assert(vim.o.clipboard == 'unnamedplus', 'unnamed operations must use the system clipboard')
   local plugins = require('lazy.core.config').plugins
   assert(not plugins['packer.nvim'], 'Packer must not be loaded')
   assert(plugins.evergarden and plugins.evergarden._.loaded, 'theme was not loaded')

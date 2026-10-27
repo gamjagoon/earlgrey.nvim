@@ -14,7 +14,7 @@ vopt.shiftwidth = 4
 vopt.sts = 4
 vopt.listchars = { space = ' ', tab = '>-', eol = '$' }
 vopt.list = true
-vim.api.nvim_set_option('clipboard', 'unnamed')
+vim.api.nvim_set_option('clipboard', 'unnamedplus')
 vopt.tags = './tags; tags;'
 
 vim.api.nvim_create_autocmd({ 'BufEnter' }, {
